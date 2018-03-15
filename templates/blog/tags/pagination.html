@@ -1,0 +1,46 @@
+<nav aria-label="Page navigation" class="col-sm-offset-3">
+    <ul class="pagination">
+
+        {# 第一页#}
+        <li title="第一页">
+            <a href="?page=1"><span aria-hidden="true">&laquo;</span></a>
+        </li>
+
+        {# 如果有上一页，则"上一页"可用 #}
+        {% if articles.has_previous %}
+            <li><a href="?page={{ articles.previous_page_number }}">上一页</a>
+            </li>
+        {% else %}
+            <li class="disabled"><a>上一页</a></li>
+        {% endif %}
+
+        {# 中间只显示5个页码，使用下面这条代码将会显示所有的页码   #}
+        {# {% for page_num in articles.paginator.page_range %} #}
+        {% for page_num in my_page_range %}
+            {% if page_num == articles.number %}
+                <li class="active">
+                    <a>{{ page_num }}</a>
+                </li>
+            {% else %}
+                <li><a href="?page={{ page_num }}">{{ page_num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {# 如果有下一页，则"下一页"可用 #}
+        {% if articles.has_next %}
+            <li><a href="?page={{ articles.next_page_number }}">下一页</a></li>
+            <li>
+                {% else %}
+            <li class="disabled"><a>下一页</a>
+            </li>
+            <li>
+        {% endif %}
+
+
+        {# 跳转至最后一页 #}
+        <a href="?page={{ articles.paginator.num_pages }}" title="最后一页">
+            <span aria-hidden="true">&raquo;</span>
+        </a>
+        </li>
+    </ul>
+</nav>

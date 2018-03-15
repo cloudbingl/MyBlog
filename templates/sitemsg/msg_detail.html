@@ -1,0 +1,36 @@
+{% extends 'user_base.html' %}
+{% block titile %}
+    {{ msg.msg_title }}
+{% endblock titile %}
+
+{% block content %}
+    <ul class="nav nav-tabs mytab" role="tablist">
+        <li role="presentation" class=""><a
+                href="{% url 'sitemsg:inbox' %}">收件箱</a></li>
+        <li role="presentation" class=""><a
+                href="{% url 'sitemsg:outbox' %}">发件箱</a></li>
+        <li role="presentation" class=""><a
+                href="{% url 'sitemsg:unread' %}">未读消息</a></li>
+        <li role="presentation" class="active"><a
+                href="{% url 'sitemsg:msg_detail' msg.id %}">消息详情</a></li>
+    </ul>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="panel-title">
+                来自"@{{ msg.user }}" 的 "{{ msg.msg_title }}"
+
+                <a class="pull-right "
+                   href="{{ next }}"><span>&times;</span></a>
+            </div>
+        </div>
+        <div class="panel-body">
+
+            {{ msg.msg_detail }}
+
+        </div>
+        <div class="panel-footer">
+            {{ msg.send_date }}
+        </div>
+    </div>
+{% endblock content %}

@@ -1,0 +1,60 @@
+{% extends 'blog_base.html' %}
+{% block titile %}
+    文章列表
+{% endblock titile %}
+
+{% block content %}
+    {% for article in articles %}
+        <article>
+            <h2>
+                <a href="{% url 'blog:article' article.id %}">{{ article.title }}</a>
+            </h2>
+            <p>{{ article.detail| truncatechars:50|striptags }}</p>
+            <p class="pull-right">
+                <span class="glyphicon glyphicon-tags"></span>
+                <span class="label label-default">
+                    {{ article.category }}
+                </span>
+            </p>
+            <ul class="list-inline">
+                <li><a href="#">
+                    <span class="glyphicon glyphicon-comment"></span>
+                    12 Comments</a>
+                </li>
+                <li><a href="">
+                    <span class="glyphicon glyphicon-user"></span>
+                    Bing</a>
+                </li>
+                <li>
+                    <span class="glyphicon glyphicon-time"></span>
+                    {{ article.pub_date }}
+                </li>
+                <li>
+                    <span class="glyphicon glyphicon-eye-open"></span>
+                    {{ article.read }}
+                </li>
+            </ul>
+        </article>
+        <hr>
+    {% endfor %}
+
+    <nav aria-label="Page navigation" class="col-sm-offset-5">
+        <ul class="pagination">
+            <li>
+                <a href="?page=1" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% for page in articles.paginator.page_range %}
+                <li><a href="?page={{ page }}">{{ page }}</a></li>
+            {% endfor %}
+
+
+            <li>
+                <a href="?page={{ articles.paginator.num_pages }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock content %}

@@ -1,0 +1,143 @@
+{% extends 'blog_base.html' %}
+{% block titile %}
+    {{ article.title }} - 内容
+{% endblock titile %}
+
+{% block content %}
+    <article>
+        <h2><a href="">{{ article.title }}</a></h2>
+        <div>{{ article.detail|safe }}</div>
+    </article>
+    <br>
+    <hr>
+    <div class="pull-right">
+        阅读({{ article.get_read_num }})
+    </div>
+    <ul class="list-inline pull-right">
+        <li class="">作者: {{ article.author }}</li>
+        <li class="">{{ article.pub_date }}</li>
+        <li class=""><a href="">{{ article.category }}</a></li>
+    </ul>
+    <div>
+        <span class="">&nbsp;</span>
+    </div>
+
+    <hr>
+    <div id="comments">
+        <h3><b>评论：</b></h3>
+        <hr>
+        {% if comments %}
+            <div class="post">
+                {% for comment in comments %}
+                    <div class="comment-{{ comment.id }}"
+                         id="comment-{{ comment.id }}">
+                        <div class="pull-right">
+                            <!-- 删除评论 -->
+                            {% if request.user == comment.user %}
+                                <a class="del_comment" data-toggle="tooltip"
+                                   data-placement="right" title="删除此条评论">
+                                    <input type="hidden" value="{{ comment.id }}">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </a>
+                            {% else %}
+                                <!-- 回复评论 -->
+                                <span class="icon-mail-reply"></span>
+                                <a class="reply_comment"
+                                   href="#comment-form"
+                                   data-toggle="tooltip"
+                                   data-placement="right" title="回复此条评论">
+                                    回复 <input type="hidden"
+                                              value="{{ comment.id }},{{ comment.user }}">
+                                </a>
+                                &nbsp;
+                                <!-- 引用评论 -->
+                                <a href="#comment-form"
+                                   class="quote_comment">引用
+                                    <input type="hidden"
+                                           value="{{ comment.user }},{{ comment.comment }}">
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h4 style="display: inline">
+                                <a href="#comment-{{ comment.id }}">#{{ forloop.counter }}楼</a>
+                                <small>&nbsp;{{ comment.cmt_date }} &nbsp;
+                                </small>
+                                |&nbsp;
+                                <a href="">{{ comment.user }}</a>
+                            </h4>&nbsp;
+                            <a href="{% url 'sitemsg:send_msg' comment.user.username %}" data-toggle="tooltip"
+                               data-placement="right" title="发送私信"><i
+                                    class=" icon-envelope-alt"></i></a>&nbsp;
+                        </div>
+                        <div>
+                            <div>
+                                {% if comment.reply_info %}
+
+                                    {% for user in comment.reply_info.split %}
+                                        @{{ user }}
+                                    {% endfor %}
+                                    <br>
+                                    {% if comment.quote_info %}
+                                        <fieldset>
+                                            <legend>
+                                                <small><i>引用</i></small>
+                                            </legend>
+                                            {{ comment.quote_info }}
+                                        </fieldset>
+                                        <br>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <div>
+                                {{ comment.comment }}
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    {% if request.session.username%}
+        <div id="comment-form">
+            <form action="{% url 'blog:add_comment' %}" method="POST"
+                  role="form" class="form-horizontal">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="nicheng" class="col-sm-1">昵称:</label>
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-user"></span>
+                            </span>
+                            <input readonly class="form-control" id="nicheng"
+                                   placeholder=" {{ request.session.username }}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                        <textarea style="width:50%;resize: none;"
+                                  cols="30" rows="10" name="comment"
+                                  id="comment"
+                                  class="form-control" required></textarea>
+                </div>
+                <input type="hidden" name="article_id"
+                       value="{{ article.id }}">
+                <div class="form-group">
+                    <button class="btn btn-primary">发表评论</button>
+                </div>
+
+            </form>
+        </div>
+        {% else %}
+        <div>
+            <p><a href="{% url 'user:login' %}?next={{ request.path }}">登录</a>后发表评论</p>
+        </div>
+
+    {% endif %}
+    </div>
+
+    <div></div>
+{% endblock content %}

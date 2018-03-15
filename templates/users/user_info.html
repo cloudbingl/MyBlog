@@ -1,0 +1,123 @@
+{% extends 'user_base.html'  %}
+
+{% block titile %}
+    个人信息
+{% endblock titile %}
+
+{% block content %}
+    <ul class="nav nav-tabs mytab" role="tablist">
+        <li role="presentation" class="active"><a
+                href="{% url 'user:user_info' %}">个人信息</a></li>
+        <li role="presentation" class=""><a
+                href="#">上传头像</a></li>
+        <li role="presentation" class=""><a
+                href="{% url 'user:user_account' %}">账户设置</a></li>
+    </ul>
+    <br>
+    <div>
+        <form action="{% url 'user:user_info' %}" method="POST" role="form"
+              class="form-horizontal">
+            {% csrf_token %}
+            <div class="form-group">
+                <div class="col-sm-2 col-sm-offset-8">
+                    谁可以看到
+                </div>
+                <div class="col-sm-2">
+                    显示到首页
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="" class="control-label col-sm-2">性别：</label>
+                <div class="col-sm-6">
+                    <select name="male" id="" class="form-control">
+                        {% if  request.user.userinfo.male == 1 %}
+                            <option value="1" selected>男</option>
+                            <option value="0">女</option>
+                        {% else %}
+                            <option value="1">男</option>
+                            <option value="0" selected>女</option>
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-sm-2">
+                    <select name="" id="" class="form-control" title="谁可以看到">
+                        <option value="">任何人</option>
+                        <option value="">仅好友</option>
+                        <option value="">保密</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-2 col-sm-push-1  checkbox-inline">
+                    <input type="checkbox" class="" title="是否显示到首页">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="" class="control-label col-sm-2">电话：</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="phone"
+                           value="{{ request.user.userinfo.phone }}">
+                </div>
+                <div class="col-sm-2">
+                    <select name="" id="" class="form-control" title="谁可以看到">
+                        <option value="">任何人</option>
+                        <option value="">仅好友</option>
+                        <option value="">保密</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-2 col-sm-push-1  checkbox-inline">
+                    <input type="checkbox" class="" title="是否显示到首页">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="" class="control-label col-sm-2">QQ：</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="qq"
+                           value="{{ request.user.userinfo.qq }}">
+                </div>
+                <div class="col-sm-2">
+                    <select name="" id="" class="form-control" title="谁可以看到">
+                        <option value="">任何人</option>
+                        <option value="">仅好友</option>
+                        <option value="">保密</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-2 col-sm-push-1  checkbox-inline">
+                    <input type="checkbox" class="" title="是否显示到首页">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="" class="control-label col-sm-2">生日：</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="birth"
+                           value="{{ request.user.userinfo.birth }}">
+                </div>
+                <div class="col-sm-2">
+                    <select name="" id="" class="form-control" title="谁可以看到">
+                        <option value="">任何人</option>
+                        <option value="">仅好友</option>
+                        <option value="">保密</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-2 col-sm-push-1  checkbox-inline">
+                    <input type="checkbox" class="" title="是否显示到首页">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-6 col-sm-offset-2">
+                    <button type="submit" class="btn btn-primary">修改</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+
+
+
+{% endblock content %}

@@ -1,0 +1,63 @@
+{% extends 'user_base.html' %}
+
+{% block titile %}
+    {{ user_info.username }} - 主页
+{% endblock titile %}
+
+{% block content %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="panel-title">信息</div>
+        </div>
+        <div class="panel-body">
+            {{ user_info.username }}
+            <br>
+            {{ user_info.date_joined }}
+        </div>
+        <div class="panel-footer"></div>
+    </div>
+
+    <!--文章列表-->
+    <div>
+        {% for article in articles %}
+            <article>
+                <h2>
+                    <a href="{% url 'blog:article' article.id %}">{{ article.title }}</a>
+                </h2>
+                <p>{{ article.detail| truncatechars:50|striptags }}</p>
+                <p class="pull-right">
+                    <span class="glyphicon glyphicon-tags"></span>
+                    <span class="label label-default">
+                    {{ article.category }}
+                </span>
+                </p>
+                <ul class="list-inline">
+                    <li><a href="">
+                        <span class="glyphicon glyphicon-user"></span>
+                        {{ article.author }}</a>
+                    </li>
+                    <li>
+                        <span class="glyphicon glyphicon-comment"></span>
+                        12 Comments
+                    </li>
+
+                    <li>
+                        <span class="glyphicon glyphicon-time"></span>
+                        {{ article.pub_date }}
+                    </li>
+                    <li>
+                        <span class="glyphicon glyphicon-eye-open"></span>
+                        {{ article.read }}
+                    </li>
+                </ul>
+            </article>
+            <hr>
+        {% endfor %}
+    </div>
+    <!--文章列表结束-->
+
+    <!-- 分页 -->
+    {% include 'blog/tags/pagination.html' %}
+    <!-- 分页结束 -->
+{% endblock content %}
+

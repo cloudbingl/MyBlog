@@ -1,0 +1,62 @@
+{% extends 'user_base.html'  %}
+
+{% block titile %}
+    我的评论
+{% endblock titile %}
+
+{% block content %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="panel-title">评论内容</div>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-4">文章标题</div>
+                <div class="col-sm-4">评论内容</div>
+                <div class="col-sm-3">作者</div>
+                <div class="col-sm-1">操作</div>
+            </div>
+        </div>
+        <ul class="list-group">
+            {% for comment in comments %}
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col-sm-4"><a
+                                href="{% url 'blog:article' comment.article_id %}#comment-{{ comment.id }}">Re:{{ comment.article.title|truncatechars:20 }}</a>
+                        </div>
+                        <div class="col-sm-4">{{ comment.comment|truncatechars:20 }}</div>
+                        <div class="col-sm-3">{{ comment.cmt_date }}</div>
+                        <div class="col-sm-1">
+                            <a class="del_comment">删除
+                                <input type="hidden" value="{{ comment.id }}">
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        <div class="panel-footer"></div>
+    </div>
+    <!-- 分页 -->
+    <nav aria-label="Page navigation" class="col-sm-offset-5">
+        <ul class="pagination">
+            <li>
+                <a href="?page=1" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% for page in comments.paginator.page_range %}
+                <li><a href="?page={{ page }}">{{ page }}</a></li>
+            {% endfor %}
+            <li>
+                <a href="?page={{ comments.paginator.num_pages }}"
+                   aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <!-- 分页结束 -->
+
+
+{% endblock content %}

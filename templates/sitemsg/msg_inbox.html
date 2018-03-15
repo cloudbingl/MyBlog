@@ -1,0 +1,67 @@
+{% extends 'user_base.html' %}
+{% block titile %}
+    收件箱
+{% endblock titile %}
+
+{% block content %}
+    <ul class="nav nav-tabs mytab" role="tablist">
+        <li role="presentation" class="active"><a
+                href="{% url 'sitemsg:inbox' %}">收件箱</a></li>
+        <li role="presentation" class=""><a
+                href="{% url 'sitemsg:outbox' %}">发件箱</a></li>
+        <li role="presentation" class=""><a href="{% url 'sitemsg:unread' %}">未读消息</a>
+        </li>
+        <li role="presentation"><a href="{% url 'sitemsg:notice' %}" target="_blank">系统通知</a></li>
+    </ul>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <td>发信人</td>
+            <td>标题</td>
+            <td>发送时间</td>
+            <td>操作</td>
+
+        </tr>
+        </thead>
+        <tbody>
+        {% for msg in inbox %}
+            <tr>
+                <td>{{ msg.user }}</td>
+                <td>
+                    <a href="{% url 'sitemsg:msg_detail' msg.id %}?next={{ request.path }}">{{ msg.msg_title }}</a>
+                </td>
+                <td>{{ msg.send_date }}</td>
+                <td><a id="del_inbox_msg">
+                    <input type="hidden"
+                           value="{{ msg.id }}">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </a>
+                </td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+{% endblock content %}
+
+{% block script %}
+    <script>
+        $("#del_inbox_msg").click(function () {
+            var d = confirm("确定删除此条信息？");
+            var id = $(this).find('input').val();
+            var url = "/sitemsg/del/"+ id + "/";
+            if (d === true) {
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    async: true,
+                    success: function () {
+                        location.reload();
+                    }
+                })
+            }
+        })
+    </script>
+
+{% endblock script %}

@@ -1,0 +1,90 @@
+{% if request.user.is_authenticated %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="panel-title">
+                添加
+            </div>
+        </div>
+        <div class="list-group">
+            <a href="{% url 'blog:edit_article' %}?opt=1"
+               class="list-group-item">添加文章</a>
+            <a class="list-group-item"
+               href="{% url 'sitemsg:send_msg' %}">编写信件</a>
+        </div>
+        <div class="panel-footer"></div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="panel-title">
+                管理
+            </div>
+        </div>
+        <div class="list-group">
+            <a class="list-group-item"
+               href="{% url 'blog:user_articles' %}">文章管理</a>
+            <a class="list-group-item"
+               href="{% url 'user:user_info' %}">个人信息</a>
+            <a class="list-group-item"
+               href="{% url 'sitemsg:inbox' %}">站内信</a>
+            <a class="list-group-item"
+               href="{% url 'blog:user_comment' %}">我的评论</a>
+        </div>
+        <div class="panel-footer"></div>
+    </div>
+
+{% else %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="panel-title">
+                信息
+            </div>
+        </div>
+        <div class="panel-body">
+            <p>
+                <a href="{% url 'user:login' %}?next={{ request.path }}">登录</a>后可以对自己的文章进行管理
+            </p>
+        </div>
+    </div>
+{% endif %}
+
+
+
+{#<div class="panel-group" role="tablist" aria-multiselectable="true">#}
+{#    <div class="panel panel-default">#}
+{#        <div class="panel-heading">#}
+{#            <div class="panel-title">#}
+{#                <a role="button" data-toggle="collapse" data-parent="" href="#article_manage" aria-expanded="true" aria-controls="article_manage">#}
+{#                    文章管理#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div id="article_manage" class="panel-collapse collapse in" role="tabpanel">#}
+{#            <div class="panel-body">#}
+{#                <ul class="list-group">#}
+{#                    <li class="list-group-item"><a href="">1</a></li>#}
+{#                    <li class="list-group-item"><a href="">2</a></li>#}
+{#                </ul>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#        <div class="panel panel-default">#}
+{#        <div class="panel-heading">#}
+{#            <div class="panel-title">#}
+{#                <a role="button" data-toggle="collapse" data-parent="" href="#article_manage" aria-expanded="true" aria-controls="article_manage">#}
+{#                    文章管理#}
+{#                </a>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div id="article_manage" class="panel-collapse collapse in" role="tabpanel">#}
+{#            <div class="panel-body">#}
+{#                <ul class="list-group">#}
+{#                    <li class="list-group-item"><a href="">1</a></li>#}
+{#                    <li class="list-group-item"><a href="">2</a></li>#}
+{#                </ul>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{##}
+{#    </div>#}
+{#</div>#}

@@ -1,0 +1,133 @@
+{% extends 'user_base.html' %}
+{% block titile %}
+    新文章
+{% endblock titile %}
+
+{% block content %}
+    <form action="{{ request.get_full_path }}" role="form"
+          class="form-horizontal" method="POST" id="article_form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="" class="col-sm-2 control-label">标题：</label>
+            <div class="col-sm-10">
+                {% if article %}
+                    <input type="text" class="form-control "
+                           name="title" required
+                           value="{{ article.title }}">
+                {% else %}
+                    <input type="text" class="form-control "
+                           name="title" required>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="article_detail"
+                   class="col-sm-2 control-label">内容：</label>
+            <div class="col-sm-10">
+                {% if article %}
+                    <textarea class="form-control" id="tinymce_detail"
+                              cols="30"
+                              rows="10">{{ article.detail }}</textarea>
+                {% else %}
+                    <textarea class="form-control" id="tinymce_detail"
+                              cols="30"
+                              rows="10"></textarea>
+                {% endif %}
+                <input type="hidden" name="detail" id="hidden_detail">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="" class="col-sm-2 control-label">分类：</label>
+            <div class="col-sm-4">
+                <select name="category" id="" class="form-control">
+                    {% for cate in category %}
+                        {% if cate == article.category %}
+                            <option value="{{ article.category.id }}"
+                                    selected>{{ article.category }}</option>
+                        {% else %}
+                            <option value="{{ cate.id }}">{{ cate.name }}</option>
+                        {% endif %}
+
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- 确定 发布 或 保存 -->
+        <input type="hidden" id="status" name="status_value" value="1">
+
+        <div class="form-group">
+            <div class="col-sm-6 col-sm-offset-2">
+                <a role="button" class="btn btn-primary btn-lg"
+                   id="article_submit">
+                    发布
+                </a>
+                <a role="button" class="btn btn-default btn-lg"
+                   id="save_article">
+                    保存草稿
+                </a>
+                <b style="color: red;" id="tip_notice"></b>
+            </div>
+        </div>
+    </form>
+{% endblock content %}
+
+
+{% block script %}
+    <script>
+        // 文章保存按钮(点击后文章转态字段设置为0即"未发布")
+        $("#save_article").click(function () {
+            $("#status").val("0");
+            console.log("执行保存");
+            check_article("确认保存文章?");
+        });
+
+        // 文章发布按钮
+        $("#article_submit").click(function () {
+            console.log("执行发不");
+            check_article("确认发布文章?");
+        });
+
+        // ajax检查文章方法
+        function check_article(status_text) {
+            $("#tip_notice").text("");
+            var d = tinyMCE.activeEditor.getContent();
+            $("#hidden_detail").val(d);
+            var article_ajax;
+            $.ajax({
+                url: "/check_article/",
+                data: $("#article_form").serialize(),
+                type: 'POST',
+                dataType: 'text',
+                cache: false,
+                success: function (data) {
+                    if (data === "验证通过") {
+                        console.log(data);
+                        if (confirm(status_text)) {
+                            // 解绑离开页面的弹窗确认
+                            window.onbeforeunload = null;
+                            $("#article_form").submit();
+                        }
+                    } else {
+                        console.log(data);
+                        $("#tip_notice").text(data);
+                    }
+                },
+                error: function (xhr) {
+                    $("#tip_notice").html(xhr.responseText);
+                    article_ajax = false;
+                    return article_ajax
+                }
+            });
+        }
+
+        window.onbeforeunload = function () {
+            return confirm("确定离开此页面吗？未保存的数据将会丢失！");
+        };
+    </script>
+{% endblock %}
+
+

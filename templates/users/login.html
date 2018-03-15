@@ -1,0 +1,100 @@
+{% extends 'blog_base.html' %}
+{% block titile %}
+    Sign in
+{% endblock titile %}
+
+{% block content %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="panel-title">
+                    <span class="glyphicon glyphicon-user"></span>
+                    Sign In
+                </div>
+            </div>
+            <div class="panel-body">
+                <form action="{% url 'user:login' %}" method="POST" role="form" class="form-horizontal">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_username"
+                               class="col-sm-2 control-label ">Username</label>
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                <input type="text" class="form-control"
+                                       id="id_username" name="username"
+                                       placeholder="Please input the username">
+                                <span class="input-group-addon">
+                                    <span class=" glyphicon glyphicon-user"></span>
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_password"
+                               class="col-sm-2 control-label ">Password</label>
+                        <div class="col-sm-8">
+                            <div class="input-group">
+                                <input type="password" class="form-control"
+                                       id="id_password" name="password"
+                                       placeholder="Please input the password">
+                                <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-lock"></span>
+                        </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_auth_code"
+                               class="col-sm-2 control-label">Auth code</label>
+                        <div class="col-sm-6">
+                            <div class="input-group">
+                                <input type="text" placeholder="Please input the verification code"
+                                       class="form-control"
+                                       id="id_auth_code">
+                                <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-barcode"></span>
+                            </span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-6 col-sm-offset-2">
+                            <input type="checkbox" title="记住用户名">
+                            <span class="control-label">remember me</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-6 col-sm-offset-2">
+                            <button type="submit"
+                                    class="btn btn-default btn-lg btn-success">
+                                Sign in
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-sm-6 col-sm-offset-2">
+                            <a href="">Forgot password ?</a>
+                        </div>
+                    </div>
+                    <input type="hidden" value="{{ next_url }}" name="next_url">
+                </form>
+
+            </div>
+            <div class="panel-footer">
+                <div class="col-sm-offset-2">
+                    还没有账号？ <a href="">Create an account</a>
+                </div>
+
+            </div>
+        </div>
+{% endblock content %}
+

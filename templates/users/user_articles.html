@@ -1,0 +1,98 @@
+<!-- 用户文章列表 -->
+{% extends 'user_base.html' %}
+
+{% block titile %}
+    我的文章
+{% endblock titile %}
+
+{% block content %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="panel-title">
+                <h4>文章列表</h4>
+            </div>
+        </div>
+        <div class="panel-body ">
+            <div class="row">
+                <div class="col-sm-6">标题</div>
+                <div class="col-sm-2 text-center">发布状态</div>
+                <div class="col-sm-2 text-center">阅读量</div>
+                <div class="col-sm-1 text-center">操作</div>
+                <div class="col-sm-1 text-center">操作</div>
+            </div>
+        </div>
+        <ul class="list-group">
+            {% if articles %}
+                {% for article in articles %}
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col-sm-6"><a
+                                    href="{% url 'blog:article' article.id %}">{{ article.title }}</a>
+                            </div>
+                            <div class="col-sm-2 text-center">
+                                {% if not article.pub_status %}
+                                    未发布
+                                {% else %}
+                                    已发布
+                                {% endif %}
+                            </div>
+                            <div class="col-sm-2 text-center">
+                                {{ article.read }}
+                            </div>
+                            <div class="col-sm-1 text-center">
+                                {#                                <a href="{% url 'blog:edit_article' article.id %}">编辑</a>#}
+                                <a href="{% url 'blog:edit_article' %}?article_id={{ article.id }}&update=1">编辑</a>
+                            </div>
+                            <div class="col-sm-1 text-center">
+                                <a id="del_article_{{ article.id }}"
+                                   data-toggle="modal"
+                                   data-target="#myModal" class="del_article"
+                                   title="删除文章：{{ article.title }} ？">删除</a>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+        <div class="panel-footer"></div>
+    </div>
+
+    {% include 'blog/tags/pagination.html' %}
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLbale">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- 模态框标题 -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4>确定删除？</h4>
+                </div>
+                <!-- 模态框内容 -->
+                <div class="modal-body">
+                    <p id="del_title"></p>
+                    <p><b>提示：删除后将无法恢复！</b></p>
+                </div>
+                <!-- 模态框底部 -->
+                <div class="modal-footer">
+                    <form action="{% url 'blog:del_article' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" value="" id="del_id"
+                               name="del_id">
+                        <button type="button" class="btn btn-default"
+                                data-dismiss="modal">Close
+                        </button>
+                        <button type="submit" class="btn btn-primary">确定
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock content %}

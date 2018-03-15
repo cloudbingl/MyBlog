@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>系统消息</title>
+</head>
+<body>
+{% for notice in notices %}
+    {{ notice.notice_title }}
+    {{ notice.notice_date }}
+
+    <hr>
+    {{ notice.notice_detail }}
+
+    {{ notice.notice_user }}
+{% endfor %}
+
+</body>
+</html>
