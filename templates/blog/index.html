@@ -43,20 +43,49 @@
     <div id="container" style="width: 600px;height:400px;margin: 0 auto"></div>
 </div>
 
-<button id="test" style="position:fixed;right:20px;bottom:20px">回到顶部</button>
-<script>
-    test.onclick = function () {
-        scrollTo(0, 0);
-    }
-</script>
+<h3>今日热门文章</h3>
+<ul>
+    {% for data in today_hot_data %}
+        <li><a href="{% url 'blog:article' data.object_id %}" target="_blank">
+            {{ data.content_object.title }} ({{ data.read_num }})</a>
+        </li>
+    {% empty %}
+        <li>今日没有热门文章</li>
+    {% endfor %}
+</ul>
+
+
+<!-- 昨日热门文章 -->
+<h3>昨日热门文章</h3>
+<ul>
+    {% for data in yesterday_hot_data %}
+        <li>
+            <a href="{% url 'blog:article' data.object_id %}" target="_blank">
+            {{ data.content_object.title }} ({{ data.read_num }})</a>
+        </li>
+        {% empty %}
+        <li>昨日没有热门文章</li>
+    {% endfor %}
+</ul>
+
+
+<h3>七天热门文章</h3>
+<ul>
+    {% for data in seven_days_hot_data %}
+        <li>
+            <a href="{% url 'blog:article' data.id %}" target="_blank">
+            {{ data.title}} ({{ data.read_num_sum }})</a>
+        </li>
+    {% empty %}
+        <li></li>
+    {% endfor %}
+
+
+</ul>
 </body>
 
 
-<script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
-<script src="{% static 'js/jquery.validate.js' %}"></script>
-<script src="{% static 'js/bootstrap.min.js' %}"></script>
-<script type="text/javascript" src='/static/tiny_mce/tiny_mce.js'></script>
-<script src="{% static 'js/blog.js' %}"></script>
+{% include 'static_tag.html' %}
 <script src="http://cdn.hcharts.cn/highcharts/highcharts.js"></script>
 
 <script>
@@ -69,7 +98,11 @@
             text: null                  // 标题
         },
         xAxis: {
-            categories: {{ dates|safe }}  // x 轴分类
+            categories: {{ dates|safe }},  // x 轴分类
+            tickmarkPlacement:"on",        // x 轴对齐方式
+            title: {
+                text: "最近七天阅读量"
+            }
         },
         yAxis: {
             title: {

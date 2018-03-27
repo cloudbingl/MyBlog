@@ -1,7 +1,7 @@
 from django.urls import path
 
 from users import views
-
+from users import utils
 app_name = 'users'
 
 urlpatterns = [
@@ -19,4 +19,5 @@ urlpatterns = [
     # 修改密码
     path('update_password/', views.update_password, name='update_password'),
 
+    path('check_username/', utils.check_username)
 ]

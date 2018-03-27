@@ -7,11 +7,17 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
+from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
 from django.db import transaction
 
 from blog import models
-from site_statistics.utils import set_read_key,get_seven_days_read_data
+from blog.forms import ArticleForm
+from site_statistics.utils import set_read_key
+from site_statistics.utils import get_seven_days_read_data
+from site_statistics.utils import get_today_hot_data
+from site_statistics.utils import get_yesterday_hot_data
+from site_statistics.utils import get_seven_days_hot_data
 from sitemsg.views import at_user_msg_handle
 
 
@@ -28,11 +34,16 @@ def page_error(request):
 def index(request):
     """主页"""
     context = {}
+    num = models.Category.objects.get(id=1)
+    print(num.get_num())
     article_content_type = ContentType.objects.get_for_model(models.Article)
     dates, read_nums = get_seven_days_read_data(article_content_type)
-    context['read_nums'] = read_nums
     context['dates'] = dates
-    return render(request, 'blog/index.html',context)
+    context['read_nums'] = read_nums
+    context['today_hot_data'] = get_today_hot_data(article_content_type)
+    context['yesterday_hot_data'] = get_yesterday_hot_data(article_content_type)
+    context['seven_days_hot_data'] = get_seven_days_hot_data()
+    return render(request, 'blog/index.html', context)
 
 
 def filter_category(request, pk):
@@ -50,6 +61,7 @@ def filter_category(request, pk):
     return render(request, 'blog/articles_filter.html', context)
 
 
+# @cache_page(60 * 15)
 def articles(request):
     """文章列表"""
     context = {}
@@ -62,6 +74,7 @@ def articles(request):
     current_page = data.number
     total_page = data_paginator.num_pages
 
+    # 自定义分页，只显示5个页码
     if total_page < 5:
         start_index = 1
         end_index = total_page + 1
@@ -103,160 +116,193 @@ def article(request, pk=None):
             return render(request, 'blog/articles.html')
 
 
-@login_required
-def edit_article(request):
-    """增加、修改文章"""
+
+
+def edit_article(request,pk):
+    """修改文章"""
     context = {}
     if request.user.is_authenticated:
         user = request.user
 
-        if request.method == 'GET':
-            opt = request.GET.get('opt', '0')
-            update = request.GET.get('update', '0')
-            article_id = request.GET.get('article_id', '0')
-            if opt == '1' and update == '0' and article_id == '0':
-                # 添加新文章
-                category = models.Category.objects.all()
-                context['category'] = category
-                return render(request, 'blog/article_edit.html', context)
-            elif opt == '0' and update == '1' and article_id != '0':
-                # 编辑文章
-                edit_context = edit_article_handle(request, user, article_id)
-                return render(request, 'blog/article_edit.html', edit_context)
-            else:
-                messages.warning(request, '访问的页面不存在')
-                return render(request,
-                              'users/user_articles.html')
+        if request.method == "GET":
+            article = models.Article.objects.get(author=user, pk=pk)
+            context['form'] = ArticleForm(instance=article)
+            return render(request, 'blog/article_edit.html', context)
 
-        elif request.method == 'POST':
-            status = request.POST.get('status_value', True)
-            title = request.POST.get('title')
-            detail = request.POST.get('detail')
-            category = request.POST.get('category')
+        if request.method == "POST":
+            form = ArticleForm(request.POST)
+            if form.is_valid():
+                models.Article.objects.filter(pk=pk).update(**form.cleaned_data)
+                messages.success(request, "文章修改成功")
+                return HttpResponseRedirect(reverse('blog:article', args=[pk]))
 
-            # 解析出POST方法提交的完整地址
-            from urllib.parse import urlparse, parse_qsl
-            url = request.get_full_path()
-            q = dict(parse_qsl(urlparse(url).query))
-
-            category_obj = models.Category.objects.get(id=category)
-
-            # 捕获添加和更新时的异常，并尝试保存草稿
-            try:
-                if 'opt' in q and int(q['opt']) == 1:
-                    if int(status) == 0:
-                        status = False
-                    edit_article_add_handle(request, user, title, detail,
-                                            category_obj, status)
-                if 'update' in q and 'article_id' in q:
-                    pk = int(q.get('article_id'))
-                    if int(status) == 0:
-                        status = False
-                    update_article_handle(request, user, pk, title, detail,
-                                          category_obj, status)
-            except Exception as e:
-                messages.warning(request, '文章提交时发生错误,已经尝试安全保存')
-                title = '[发生错误,安全保存]' + title
-                try:
-                    edit_article_add_handle(request, user, title, detail,
-                                            category, False)
-                except Exception as e:
-                    messages.warning(request, '表单填写不完整，未安全保存')
-            return HttpResponseRedirect(reverse('blog:user_articles'))
-
-
-@csrf_exempt
-def check_article_handle(request):
-    """ajax验证文章的合法性"""
-    status = request.POST.get('status_value')
-    category = request.POST.get('category', '')
-    title = request.POST.get('title', '')
-    detail = request.POST.get('detail', '')
-    context = 'Error:'
-    if not title:
-        context += '标题不能为空!'
-        return HttpResponse(context)
-    if not detail:
-        context += '内容不能为空!'
-        return HttpResponse(context)
-    if not category:
-        context += '分类不能为空!'
-        return HttpResponse(context)
-    if not category.isdecimal():
-        context += '分类错误!'
-        return HttpResponse(context)
-    if status != '0' and status != '1':
-        context += '只能进行发布或保存!'
-        return HttpResponse(context)
-    return HttpResponse('验证通过')
-
-
-def edit_article_handle(request, user, article_id):
-    """返回需要编辑文章数据"""
+def add_article(request):
+    """添加新文章"""
     context = {}
-    try:
-        article = models.Article.objects.get(id=article_id, author=user)
-        context['article'] = article
-        category = models.Category.objects.all()
-        context['category'] = category
-    except models.Article.DoesNotExist:
-        messages.warning(request, '文章不存在')
-    return context
+    if request.user.is_authenticated:
+        user = request.user
+
+        if request.method == "GET":
+            context['form'] = ArticleForm()
+            return render(request, 'blog/article_add.html', context)
+
+        if request.method == "POST":
+            form = ArticleForm(request.POST)
+            if form.is_valid():
+                form_obj = form.save(commit=False)
+                form_obj.author = user
+                form.save()
+                messages.success(request, '文章添加成功')
+                return HttpResponseRedirect(reverse('blog:articles'))
 
 
-def edit_article_add_handle(request, user, title, detail, category_obj,
-                            pub_status):
-    """添加新文章操作"""
-    try:
-        article_obj = models.Article()
-        article_obj.author = user
-        article_obj.title = title
-        article_obj.detail = detail
-        article_obj.category = category_obj
-        article_obj.pub_status = pub_status
-        article_obj.save()
-        if pub_status:
-            category_obj.num += 1
-            category_obj.save()
-        messages.success(request, '文章添加成功')
-    except Exception as e:
-        messages.warning(request, '文章添加失败')
-        raise
 
 
-def update_article_handle(request, user, pk, title, detail, category_obj,
-                          pub_status):
-    """更新文章操作"""
-    try:
-        article_obj = models.Article.objects.get(id=pk, author=user)
-        old_pub_status = article_obj.pub_status
-        old_category = article_obj.category
 
-        article_obj.title = title
-        article_obj.detail = detail
-        article_obj.category = category_obj
-
-        article_obj.pub_status = pub_status
-        article_obj.save()
-
-        if old_pub_status:  # 以前发布了
-            if not pub_status:  # 现在没发布
-                category_obj.num -= 1
-        else:  # 以前没发布
-            if pub_status:  # 现在发布了
-                category_obj.num += 1
-        if old_category != category_obj:
-            category_obj.num += 1
-            old_category_obj = models.Category.objects.get(name=old_category)
-            old_category.num -= 1
-            old_category.save()
-
-        category_obj.save()
-        messages.success(request, '文章更新成功')
-    except models.Article.DoesNotExist:
-        messages.warning(request, '修改的文章不存在')
-        raise
-
+# '''
+# @login_required
+# def edit_article(request):
+#     """增加、修改文章"""
+#     if request.user.is_authenticated:
+#         user = request.user
+#
+#         if request.method == 'GET':
+#             opt = request.GET.get('opt', '0')
+#             update = request.GET.get('update', '0')
+#             article_id = request.GET.get('article_id', '0')
+#             if opt == '1' and update == '0' and article_id == '0':
+#                 # 添加新文章
+#                 category = models.Category.objects.all()
+#                 context['category'] = category
+#                 from blog.forms import ArticleForm
+#                 context['form'] = ArticleForm()
+#                 return render(request, 'blog/article_edit.html', context)
+#             elif opt == '0' and update == '1' and article_id != '0':
+#                 # 编辑文章
+#                 edit_context = edit_article_handle(request, user, article_id)
+#                 return render(request, 'blog/article_edit.html', edit_context)
+#             else:
+#                 messages.warning(request, '访问的页面不存在')
+#                 return render(request,
+#                               'users/user_articles.html')
+#
+#         elif request.method == 'POST':
+#             status = request.POST.get('status_value', True)
+#             title = request.POST.get('title')
+#             detail = request.POST.get('detail')
+#             category = request.POST.get('category')
+#
+#             # 解析出POST方法提交的完整地址
+#             from urllib.parse import urlparse, parse_qsl
+#             url = request.get_full_path()
+#             q = dict(parse_qsl(urlparse(url).query))
+#
+#             category_obj = models.Category.objects.get(id=category)
+#
+#             # 捕获添加和更新时的异常，并尝试保存草稿
+#             try:
+#                 if 'opt' in q and int(q['opt']) == 1:
+#                     if int(status) == 0:
+#                         status = False
+#                     edit_article_add_handle(request, user, title, detail,
+#                                             category_obj, status)
+#                 if 'update' in q and 'article_id' in q:
+#                     pk = int(q.get('article_id'))
+#                     if int(status) == 0:
+#                         status = False
+#                     update_article_handle(request, user, pk, title, detail,
+#                                           category_obj, status)
+#             except Exception as e:
+#                 messages.warning(request, '文章提交时发生错误,已经尝试安全保存')
+#                 title = '[发生错误,安全保存]' + title
+#                 try:
+#                     edit_article_add_handle(request, user, title, detail,
+#                                             category, False)
+#                 except Exception as e:
+#                     messages.warning(request, '表单填写不完整，未安全保存')
+#             return HttpResponseRedirect(reverse('blog:user_articles'))
+#
+#
+# @csrf_exempt
+# def check_article_handle(request):
+#     """ajax验证文章的合法性"""
+#     status = request.POST.get('status_value')
+#     category = request.POST.get('category', '')
+#     title = request.POST.get('title', '')
+#     detail = request.POST.get('ck_detail', '')
+#     context = 'Error:'
+#     if not title:
+#         context += '标题不能为空!'
+#         return HttpResponse(context)
+#     if not detail:
+#         context += '内容不能为空!'
+#         return HttpResponse(context)
+#     if not category:
+#         context += '分类不能为空!'
+#         return HttpResponse(context)
+#     if not category.isdecimal():
+#         context += '分类错误!'
+#         return HttpResponse(context)
+#     if status != '0' and status != '1':
+#         context += '只能进行发布或保存!'
+#         return HttpResponse(context)
+#     return HttpResponse('验证通过')
+#
+#
+# def edit_article_handle(request, user, article_id):
+#     """返回需要编辑文章数据"""
+#     context = {}
+#     try:
+#         article = models.Article.objects.get(id=article_id, author=user)
+#         context['article'] = article
+#         category = models.Category.objects.all()
+#         context['category'] = category
+#     except models.Article.DoesNotExist:
+#         messages.warning(request, '文章不存在')
+#     return context
+#
+#
+# def edit_article_add_handle(request, user, title, detail, category_obj,
+#                             pub_status):
+#     """添加新文章操作"""
+#     try:
+#         article_obj = models.Article()
+#         article_obj.author = user
+#         article_obj.title = title
+#         article_obj.detail = detail
+#         article_obj.category = category_obj
+#         article_obj.pub_status = pub_status
+#         article_obj.save()
+#         if pub_status:
+#             category_obj.num += 1
+#             category_obj.save()
+#         messages.success(request, '文章添加成功')
+#     except Exception as e:
+#         messages.warning(request, '文章添加失败')
+#         raise
+#
+#
+# def update_article_handle(request, user, pk, title, detail, category_obj,
+#                           pub_status):
+#     """更新文章操作"""
+#     try:
+#         article_obj = models.Article.objects.get(id=pk, author=user)
+#         old_pub_status = article_obj.pub_status
+#         old_category = article_obj.category
+#
+#         article_obj.title = title
+#         article_obj.detail = detail
+#         article_obj.category = category_obj
+#
+#         article_obj.pub_status = pub_status
+#         article_obj.save()
+#
+#         category_obj.save()
+#         messages.success(request, '文章更新成功')
+#     except models.Article.DoesNotExist:
+#         messages.warning(request, '修改的文章不存在')
+#         raise
+# '''
 
 @login_required
 def del_article(request):
@@ -285,7 +331,7 @@ def user_index(request, pk):
         messages.warning(request, '用户不存在')
         return render(request, 'blog/index.html')
     articles = models.Article.objects.filter(author=user, pub_status=True) \
-                                     .order_by('-pub_date')
+        .order_by('-pub_date')
     context['articles'] = articles
     return render(request, 'users/user_index.html', context)
 
@@ -298,13 +344,12 @@ def user_articles(request):
         if request.method == 'GET':
             context = {}
             articles = models.Article.objects.filter(author=user) \
-                                             .order_by('-pub_date')
+                .order_by('-pub_date')
             page = request.GET.get('page')
             data_paginator = Paginator(articles, 5)
             data = data_paginator.get_page(page)
             context['articles'] = data
-            return render(request,
-                          'users/user_articles.html', context)
+            return render(request, 'users/user_articles.html', context)
 
 
 @login_required
@@ -313,8 +358,8 @@ def user_comment(request):
     context = {}
     if request.user.is_authenticated:
         user = request.user
-        comments = models.Comment.objects.filter(user=user,is_delete=False)\
-                                         .order_by('-cmt_date')
+        comments = models.Comment.objects.filter(user=user, is_delete=False) \
+            .order_by('-cmt_date')
         page = request.GET.get('page', 1)
         data_paginator = Paginator(comments, 20)
         data = data_paginator.get_page(page)
@@ -400,4 +445,3 @@ def del_comment_json_handle(request, pk):
         comment.save()
         messages.success(request, '此条评论已成功删除')
         return JsonResponse({'status': 'ok'})
-

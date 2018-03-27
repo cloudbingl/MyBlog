@@ -11,28 +11,30 @@
             </h2>
             <p>{{ article.detail| truncatechars:50|striptags }}</p>
             <p class="pull-right">
-                <span class="glyphicon glyphicon-tags"></span>
+                <i class="far fa-bookmark"></i>
                 <span class="label label-default">
                     {{ article.category }}
                 </span>
             </p>
             <ul class="list-inline">
-                <li><a href="#">
-                    <span class="glyphicon glyphicon-comment"></span>
-                    12 Comments</a>
-                </li>
-                <li><a href="">
-                    <span class="glyphicon glyphicon-user"></span>
-                    Bing</a>
+                <li>
+                    <i class="far fa-user"></i>
+                    <a href="">{{ article.author }}</a>
                 </li>
                 <li>
                     <span class="glyphicon glyphicon-time"></span>
-                    {{ article.pub_date }}
+                    发布于{{ article.pub_date }}
                 </li>
                 <li>
-                    <span class="glyphicon glyphicon-eye-open"></span>
-                    {{ article.read }}
+                    <i class="far fa-comment"></i>
+                    <a href="{% url 'blog:article' article.id %}#comments">评论({{ article.comment_cout }})</a>
+
                 </li>
+                <li>
+                    <i class="fas fa-eye"></i>
+                    阅读({{ article.get_read_num }})
+                </li>
+
             </ul>
         </article>
         <hr>

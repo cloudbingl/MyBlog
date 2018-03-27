@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -51,7 +51,6 @@
             <!-- 文章列表结束 -->
         </div>
 
-
         <div class="col-sm-3">
             {% include 'users/tags/user_menu.html' %}
         </div>
@@ -62,12 +61,7 @@
 
 <button id="test" style="position:fixed;right:20px;bottom:20px">回到顶部</button>
 
-<script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
-<script src="{% static 'js/jquery.validate.js' %}"></script>
-<script src="{% static 'js/bootstrap.min.js' %}"></script>
-<script src="{% static 'js/user.js' %}"></script>
-<script src="{% static 'js/general.js' %}"></script>
-
+{% include 'static_tag.html' %}
 
 <script>
     test.onclick = function () {

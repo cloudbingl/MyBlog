@@ -44,3 +44,39 @@ def get_seven_days_read_data(content_type):
         result = read_details.aggregate(read_num_sum=Sum('read_num'))
         read_nums.append(result['read_num_sum'] or 0)
     return dates,read_nums
+
+
+def get_today_hot_data(content_type):
+    today = timezone.now().date()
+    read_details = ReadDetail.objects.filter(content_type=content_type, date=today).order_by("-read_num")
+    return read_details[:5]
+
+def get_yesterday_hot_data(content_type):
+    today = timezone.now().date()
+    yesterday = today - datetime.timedelta(days=1)
+    read_details = ReadDetail.objects.filter(content_type=content_type, date=yesterday).order_by("-read_num")
+    return read_details[:5]
+
+# def get_seven_days_hot_data(content_type):
+#     today = timezone.now().date()
+#     seven_days = today - datetime.timedelta(days=7)
+#     read_details = ReadDetail.objects\
+#                              .filter(content_type=content_type,
+#                                      date__lt=today,
+#                                      date__gte=seven_days) \
+#                              .values("content_type", "object_id") \
+#                              .annotate(read_num_sum=Sum('read_num')) \
+#                              .order_by("-read_num_sum")
+#     return read_details[:7]
+
+def get_seven_days_hot_data():
+    today = timezone.now().date()
+    seven_day = today - datetime.timedelta(days=7)
+    from blog.models import Article
+    from django.db.models import Q
+    articles = Article.objects.filter(Q(read_detail__date__lt=today) & \
+                                      Q(read_detail__date__gte=seven_day)) \
+                               .values('id', 'title')  \
+                               .annotate(read_num_sum=Sum('read_detail__read_num')) \
+                               .order_by('-read_num_sum')
+    return articles[:7]

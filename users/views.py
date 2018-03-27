@@ -10,27 +10,37 @@ from django.urls import reverse
 
 def login(request):
     """用户登录"""
-    content = {}
+    referer = request.META.get('HTTP_REFERER')  # 获取登录前的页面地址
+    context = {}
+
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('blog:index'))
+
     if request.method == "GET":
-        return render(request, "users/login.html", content)
+        if request.COOKIES.get("username"):
+            username = request.COOKIES.get("username")
+            context["username"] = username
+        # 从模态框中登录，referer会正常获取登录前的网址
+        # 但是从登录页面登录，获取的referer值依然是登录页面地址，无法使登录后
+        # 跳转至登录前的页面，所以将referer值传入登录表单中，登录后将正确的跳
+        # 转回之前的页面
+        context['referer'] = referer
+        return render(request, "users/login.html", context)
 
     if request.method == "POST":
         login_name = request.POST.get("username", "").strip()
         login_pwd = request.POST.get("password", "").strip()
-        next_url = request.POST.get("next_url", "").strip()
+        login_referer = request.POST.get("referer", referer).strip()
         save_name = request.POST.get("save_name", 0)
         user = authenticate(username=login_name, password=login_pwd)
         if user is not None:
             auth.login(request, user)
             messages.success(request, "登陆成功")
-            # request.session["username"] = login_name
-            # 设置session过期时间为 关闭浏览器后过期
-            # request.session.set_expiry(0)
             httprr = HttpResponseRedirect("/")
-            if next_url:
-                print(next_url)
-                httprr = HttpResponseRedirect(next_url)
-            print(next_url)
+            if save_name:
+                httprr.set_cookie("username", login_name, max_age=259200)
+            if login_referer is not None:
+                httprr = HttpResponseRedirect(login_referer)
             return httprr
         else:
             messages.warning(request, "用户名或密码错误")
@@ -40,27 +50,29 @@ def login(request):
 @login_required
 def logout(request):
     """注销"""
+    referer = request.META.get('HTTP_REFERER')
     if request.user.is_authenticated:
-        next_url = request.GET.get("next")
         auth.logout(request)
-        # messages.success(request, "注销成功")
-        if next_url:
-            print(next_url)
-            return HttpResponseRedirect(next_url)
+        if referer:
+            print(referer)
+            return HttpResponseRedirect(referer)
     return redirect("/")
 
 
 def register(request):
     """用户注册"""
-    content = {}
+    context = {}
+    if request.user.is_authenticated:
+        return HttpResponseRedirect(reverse('blog:index'))
+
     if request.method == "GET":
-        return render(request, 'users/register.html', content)
+        return render(request, 'users/register.html', context)
+
     elif request.method == "POST":
         username = request.POST.get("username").strip()
         pwd = request.POST.get("password").strip()
         repwd = request.POST.get("re_password").strip()
         email = request.POST.get("email").strip()
-        auth_code = request.POST.get("auth_code").strip()
 
         if pwd == repwd:
             try:
@@ -75,7 +87,8 @@ def register(request):
                                                 password=pwd)
                 user.save()
                 # TODO 注册成功后登陆
-                return HttpResponseRedirect(reverse('blog:articles'))
+                messages.success(request,"注册成功，请登录")
+                return HttpResponseRedirect(reverse('user:login'))
         return HttpResponseRedirect(reverse('user:register'))
 
 

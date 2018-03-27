@@ -1,16 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericRelation
 from ckeditor_uploader.fields import RichTextUploadingField
 
-from site_statistics.models import ReadNumExtendMethod
+from site_statistics.models import ReadNumExtendMethod,ReadDetail
 
 
 class Category(models.Model):
     name = models.CharField(max_length=32, verbose_name="分类名称")
-    num = models.IntegerField(default=0, verbose_name="文章数量")
 
     def __str__(self):
         return self.name
+
+    def get_num(self):
+        num = Article.objects.filter(category=self.pk).count()
+        return num
 
     class Meta:
         verbose_name = "文章分类"
@@ -29,6 +33,7 @@ class Article(models.Model, ReadNumExtendMethod):
     category = models.ForeignKey(Category, on_delete=models.CASCADE,
                                  verbose_name="文章分类")
     is_delete = models.BooleanField(default=False, verbose_name="是否删除")
+    read_detail = GenericRelation(ReadDetail)
 
     def __str__(self):
         return self.title

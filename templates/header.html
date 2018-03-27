@@ -40,28 +40,39 @@
                 <button type="submit" class="btn btn-default">搜索</button>
             </form>
 
-            {#            <ul class="nav navbar-nav navbar-left">#}
-            {# 带有图标的天气插件               #}
-            {#                <li>#}
-            {#                    <iframe allowtransparency="true" frameborder="0"#}
-            {#                            width="180" height="36" scrolling="no"#}
-            {#                            src="//tianqi.2345.com/plugin/widget/index.htm?s=3&z=2&t=1&v=0&d=1&bd=0&k=ffffff&f=000000&ltf=0080ff&htf=cc0000&q=1&e=0&a=1&c=54511&w=180&h=36&align=center"></iframe>#}
-            {#                </li>#}
+            <ul class="nav navbar-nav navbar-right hidden-xs">
+                {% if request.user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'user:user_index' %}"
+                           title="{{ request.user }}">
+                            <img style="width: 25px; height: 25px;"
+                                 src="/media/1.jpg" class="img-rounded">
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'sitemsg:inbox' %}">
+                            <i class="far fa-bell"></i>
+                            <span class="badge"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'user:logout' %}">注销</a>
+                    </li>
+                    <li><a href="/admin">后台</a></li>
+                {% else %}
+                    <li>
+                        <a data-toggle="modal" class="my_modal_login"
+                           data-target="#loginModal">
+                            登录
+                        </a>
+                    </li>
+                    <li><a data-toggle="modal" data-target="#registerModal"
+                           class="my_modal_register">注册</a></li>
+                    <li><a href="/admin">Admin</a></li>
+                {% endif %}
+            </ul>
 
-
-            {#                <li role="presentation">#}
-            {#                    <a href="#">#}
-            {#                        <iframe allowtransparency="true" frameborder="0"#}
-            {#                                width="180" height="18" scrolling="no"#}
-            {#                                src="//tianqi.2345.com/plugin/widget/index.htm?s=3&z=1&t=1&v=0&d=1&bd=0&k=ffffff&f=000000&ltf=0080ff&htf=cc0000&q=1&e=0&a=0&c=58357&w=317&h=28&align=center"></iframe>#}
-            {#                        <iframe allowtransparency="true" frameborder="0"#}
-            {#                                width="200" height="18" scrolling="no"#}
-            {#                                src="//tianqi.2345.com/plugin/widget/index.htm?s=3&z=1&t=1&v=0&d=1&bd=0&k=ffffff&f=ffffff&ltf=0080ff&htf=cc0000&q=1&e=0&a=0&c=58357&w=317&h=28&align=center"></iframe>#}
-            {#                    </a>#}
-            {#                </li>#}
-            {#            </ul>#}
-
-            <ul class="nav navbar-nav navbar-right">
+            <ul class="nav navbar-nav navbar-right visible-xs">
                 {% if request.user.is_authenticated %}
                     <li>
                         <a href="{% url 'user:user_index' %}"
@@ -76,11 +87,13 @@
                             <span class="badge">2</span>
                         </a>
                     </li>
-                    <li><a href="{% url 'user:logout' %}?next={{ request.get_full_path }}">注销</a></li>
+                    <li>
+                        <a href="{% url 'user:logout' %}">注销</a>
+                    </li>
                     <li><a href="/admin">后台</a></li>
                 {% else %}
                     <li>
-                        <a data-toggle="modal" data-target="#loginModal">
+                        <a href="{% url 'user:login' %}">
                             登录
                         </a>
                     </li>
@@ -92,85 +105,226 @@
     </div>
 </nav>
 
-{# 登录框 #}
-<div class="modal fade" tabindex="-1" role="dialog"
-     id="loginModal" aria-labelledby="login_registerLabel">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button class="close" data-dismiss="modal"
-                        aria-label="Close">&times;
-                </button>
-                <h4 class="modal-title">登录</h4>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <form action="{% url 'user:login' %}" role="form" method="POST"
-                              class="form-horizontal">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <label for="login_username"
-                                       class="col-md-2 control-label">用户名</label>
-                                <div class="col-md-8">
-                                    <input type="text" placeholder="用户名" name="username"
-                                           id="login_username"
-                                           class="form-control">
-                                </div>
-
-                            </div>
-                            <div class="form-group">
-                                <label for="login_pwd"
-                                       class="col-md-2 control-label">密码</label>
-                                <div class="col-md-8">
-                                    <input type="password" placeholder="密码"
-                                           id="login_pwd" name="password"
-                                           class="form-control">
+<!-- 模态框 -->
+{% if not request.user.is_authenticated %}
+    {# 登录模态框 #}
+    <div class="modal fade" tabindex="-1" role="dialog"
+         id="loginModal" aria-labelledby="login_Label">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="close" data-dismiss="modal"
+                            aria-label="Close">&times;
+                    </button>
+                    <h4 class="modal-title">登录</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form action="{% url 'user:login' %}" role="form"
+                                  method="POST"
+                                  class="form-horizontal"
+                                  id="modal_login_form">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="login_username"
+                                           class="col-md-2 control-label">用户名</label>
+                                    <div class="col-md-8">
+                                        <input type="text" placeholder="用户名"
+                                               name="username"
+                                               id="login_username"
+                                               class="form-control">
+                                        <div id="login_username_error"></div>
+                                    </div>
 
                                 </div>
-                            </div>
-                            <input type="hidden" value="{{ request.get_full_path }}" name="next_url">
-                            <div class="form-group">
-                                <div class="col-md-8 col-md-offset-2">
-                                    <div class="text-muted  text-center btn-group btn-group-justified"
-                                         role="group">
-                                        <div class="btn-group" role="group">
-                                            <button type="submit" class="btn btn-success">登录
-                                            </button>
-                                        </div>
-
+                                <div class="form-group">
+                                    <label for="login_pwd"
+                                           class="col-md-2 control-label">密码</label>
+                                    <div class="col-md-8">
+                                        <input type="password" placeholder="密码"
+                                               id="login_password" name="password"
+                                               class="form-control">
+                                        <div id="login_password_error"></div>
                                     </div>
                                 </div>
-                            </div>
+                                <input type="hidden"
+                                       value="{{ request.get_full_path }}"
+                                       name="next_url">
+                                <div class="form-group">
+                                    <div class="col-md-8 col-md-offset-2">
+                                        <div class="text-muted  text-center btn-group btn-group-justified"
+                                             role="group">
+                                            <div class="btn-group"
+                                                 role="group">
+                                                <button type="submit"
+                                                        class="btn btn-success">
+                                                    登录
+                                                </button>
+                                            </div>
 
-                            <hr>
-
-                            <div class="form-group">
-                                <div class="text-center">
-                                    还没有账号?
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="col-md-8 col-md-offset-2">
-                                    <div class="text-muted text-center btn-group btn-group-justified"
-                                         role="group">
-                                        <div class="btn-group" role="group">
-                                            <a href="{% url 'users:register' %}"
-                                               class="btn btn-default">
-                                                注册新账号
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                        </form>
+                                <hr>
+
+                                <div class="form-group">
+                                    <div class="text-center">
+                                        还没有账号?
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8 col-md-offset-2">
+                                        <div class="text-muted text-center btn-group btn-group-justified"
+                                             role="group">
+                                            <div class="btn-group"
+                                                 role="group">
+
+                                                <a data-toggle="modal"
+                                                   data-target="#registerModal"
+                                                   class="btn btn-default my_modal_register">
+                                                    注册新账号</a>
+
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="modal-footer"><a href="">忘记密码</a></div>
+                <div class="modal-footer"><a href="">忘记密码</a></div>
+            </div>
         </div>
     </div>
-</div>
 
+    {# 注册模态框 #}
+    <div class="modal fade" tabindex="-1" role="dialog"
+         id="registerModal" aria-labelledby="register_Label">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="close" data-dismiss="modal"
+                            aria-label="Close">&times;
+                    </button>
+                    <h4 class="modal-title">注册</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form action="{% url 'user:register' %}" role="form"
+                                  method="POST" class="form-horizontal"
+                                  id="modal_register_form">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="login_username"
+                                           class="col-md-2 control-label">用户名</label>
+                                    <div class="col-md-8">
+                                            <input type="text"
+                                                   placeholder="用户名"
+                                                   name="username"
+                                                   id="reg_username"
+                                                   class="form-control">
+                                        <div id="reg_username_error"></div>
+                                    </div>
+
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="login_pwd"
+                                           class="col-md-2 control-label">邮箱</label>
+                                    <div class="col-md-8">
+                                            <input type="text"
+                                                   placeholder="邮箱"
+                                                   id="reg_email"
+                                                   name="email"
+                                                   class="form-control">
+                                            <div id="reg_email_error"></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="login_pwd"
+                                           class="col-md-2 control-label">密码</label>
+                                    <div class="col-md-8">
+                                            <input type="password"
+                                                   placeholder="密码"
+                                                   id="reg_password"
+                                                   name="password"
+                                                   class="form-control">
+                                            <div id="reg_password_error"></div>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label for="login_pwd"
+                                           class="col-md-2 control-label">重复密码</label>
+                                    <div class="col-md-8">
+                                            <input type="password"
+                                                   placeholder="重复密码"
+                                                   id="reg_repassword"
+                                                   name="re_password"
+                                                   class="form-control">
+                                             <div id="reg_repassword_error"></div>
+
+                                    </div>
+                                </div>
+
+
+                                <input type="hidden"
+                                       value="{{ request.get_full_path }}"
+                                       name="next_url">
+                                <div class="form-group">
+                                    <div class="col-md-8 col-md-offset-2">
+                                        <div class="text-muted  text-center btn-group btn-group-justified"
+                                             role="group">
+                                            <div class="btn-group"
+                                                 role="group">
+                                                <button type="submit"
+                                                        class="btn btn-success">
+                                                    注册
+                                                </button>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="form-group">
+                                    <div class="text-center">
+                                        已有账号！
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-8 col-md-offset-2">
+                                        <div class="text-muted text-center btn-group btn-group-justified"
+                                             role="group">
+                                            <div class="btn-group"
+                                                 role="group">
+                                                <a data-toggle="modal"
+                                                   class="btn btn-default my_modal_login"
+                                                   data-target="#loginModal">
+                                                    登录
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer"><a href="">忘记密码</a></div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+<!-- 模态框结束 -->

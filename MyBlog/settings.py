@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 插件
-    'tinymce',
     'ckeditor',
     'ckeditor_uploader',
     # 'markdownx'
@@ -46,6 +45,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',  # 用户系统
     'sitemsg.apps.SitemsgConfig',  # 站内信系统
     'site_statistics.apps.SiteStatisticsConfig',
+    'comments.apps.CommentsConfig'  # 评论系统
 ]
 
 MIDDLEWARE = [
@@ -137,7 +137,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = ''
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
@@ -148,29 +148,93 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_URL = '/user/login/'
 
 # Caches
-CACHES = {
-    # Redis Cache
-    # 'default': {
-    #     'BACKEND': 'redis_cache.cache.RedisCache',
-    #     'LOCATION': 'localhost:6379',
-    #     'TIMEOUT': 60,
-    # },
+# CACHES = {
+# Redis Cache
+# 'default': {
+#     'BACKEND': 'redis_cache.cache.RedisCache',
+#     'LOCATION': 'localhost:6379',
+#     'TIMEOUT': 60,
+# },
 
-    # 文件系统缓存
-    'default': {
-        'BACKEND':'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': 'e:/workspace/django/cache',
-    }
-}
+# 文件系统缓存
+# 'default': {
+#     'BACKEND':'django.core.cache.backends.filebased.FileBasedCache',
+#     'LOCATION': 'e:/workspace/django/cache',
+# }
+# }
+
+
 
 # django-tinymce
-TINYMCE_DEFAULT_CONFIG = {
-    'theme': 'advanced',
-    'width': 900,
-    'height': 800,
-}
+# TINYMCE_DEFAULT_CONFIG = {
+#     'theme': 'advanced',
+#     'width': 900,
+#     'height': 800,
+# }
 
 # 配置 ckeditor
 CKEDITOR_UPLOAD_PATH = 'upload'
+CKEDITOR_ALLOW_NONIMAGE_FILES = False
 
+CKEDITOR_CONFIGS = {
+    'default': {
+        'skin': 'moono',
+        'toolbar_Basic': [
+            ['Source', '-', 'Bold', 'Italic']
+        ],
+        'toolbar_YourCustomToolbarConfig': [
+            {'name': 'document', 'items': ['Source', '-', 'Preview', 'Print', '-', 'Templates']},
+            {'name': 'clipboard', 'items': ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+            {'name': 'editing', 'items': ['Find', 'Replace', '-', 'SelectAll']},
+            {'name': 'forms',
+             'items': ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton',
+                       'HiddenField']},
+            '/',
+            {'name': 'basicstyles',
+             'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
+            {'name': 'paragraph',
+             'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-',
+                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl']},
+            {'name': 'links', 'items': ['Link', 'Unlink', 'Anchor']},
+            {'name': 'insert',
+             'items': ['Image','Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+            '/',
+            {'name': 'styles', 'items': ['Styles', 'Format', 'Font', 'FontSize']},
+            {'name': 'colors', 'items': ['TextColor', 'BGColor']},
+            {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
+            {'name': 'about', 'items': ['About']},
+            '/',  # put this to force next toolbar on new line
+            {'name': 'yourcustomtools', 'items': [
+                # put the name of your editor.ui.addButton here
+                'Preview',
+                'Maximize',
+            ]},
+        ],
+        'toolbar': 'YourCustomToolbarConfig',  # put selected toolbar config here
+        # 'toolbarGroups': [{ 'name': 'document', 'groups': [ 'mode', 'document', 'doctools' ] }],
+        'height': 291,
+        'width': '100%',
+        # 'filebrowserWindowHeight': 725,
+        # 'filebrowserWindowWidth': 940,
+        # 'toolbarCanCollapse': True,
+        # 'mathJaxLib': '//cdn.mathjax.org/mathjax/2.2-latest/MathJax.js?config=TeX-AMS_HTML',
+        'tabSpaces': 4,
+        'extraPlugins': ','.join([
+            'uploadimage', # the upload image feature
+            # your extra plugins here
+            'div',
+            'autolink',
+            'autoembed',
+            'embedsemantic',
+            'autogrow',
+            # 'devtools',
+            'widget',
+            'lineutils',
+            'clipboard',
+            'dialog',
+            'dialogui',
+            'elementspath'
+        ]),
+    }
+}
 # 自定义参数

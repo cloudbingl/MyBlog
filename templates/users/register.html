@@ -1,147 +1,133 @@
-{% extends 'user_base.html' %}
-{% block titile %}
-    Sign up
-{% endblock titile %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/blog.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fontawesome-all.min.css' %}">
+</head>
+<body>
+<div><a href="{% url 'blog:index' %}">首页</a></div>
 
-{% block content %}
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <div class="panel-title">
-                Sign Up
-            </div>
-        </div>
-        <div class="panel-body">
-            <form action="{% url 'user:register' %}" method="POST" role="form" class="form-horizontal">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label for="id_username" class="col-sm-3 control-label ">Username</label>
-                    <div class="col-sm-7">
-                        <div class="input-group">
-                            <input type="text" class="form-control"
-                                   id="id_username" name="username"
-{#                                   placeholder="Please input the username"#}
-                            >
-                            <span class="input-group-addon">
-                                <i class="far fa-user"></i>
-                            </span>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="form-group">
-                    <label for="id_username" class="col-sm-3 control-label ">Email
-                        Address</label>
-                    <div class="col-sm-7">
-                        <div class="input-group">
-                            <input type="text" class="form-control"
-                                   id="id_username" name="email"
-                                   placeholder="Please input the email">
-                            <span class="input-group-addon">
-                                <span class="glyphicon glyphicon-envelope"></span>
-                            </span>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="form-group">
-                    <label for="id_password"
-                           class="col-sm-3 control-label ">Password</label>
-                    <div class="col-sm-7">
-                        <div class="input-group">
-                            <input type="password" class="form-control"
-                                   id="id_password" name="password"
-                                   placeholder="Please input the password">
-                            <span class="input-group-addon">
-                            <i class="fas fa-key"></i>
-                        </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_password"
-                           class="col-sm-3 control-label ">Password
-                        again</label>
-                    <div class="col-sm-7">
-                        <div class="input-group">
-                            <input type="password" class="form-control"
-                                   id="id_repassword" name="re_password"
-                                   placeholder="Please repeat the password">
-                            <span class="input-group-addon">
-                            <i class="fas fa-key"></i>
-                        </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="id_auth_code" class="col-sm-3 control-label">
-                        Code</label>
-                    <div class="col-sm-4">
-                        <div class="input-group">
-                            <input type="text" placeholder="Please input the verification code"
-                                   class="form-control" name="auth_code"
-                                   id="id_auth_code">
-                            <span class="input-group-addon">
-                                <i class="fas fa-barcode"></i>
-                            </span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <div class="form-group">
-                    <div class="col-sm-6 col-sm-offset-3">
-                        <input type="checkbox" title="记住用户名" name="save_name">
-                        <span class="control-label">remember me</span>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="col-sm-6 col-sm-offset-3">
-                        <button type="submit"
-                                class="btn btn-default btn-lg btn-success">
-                            Create an account
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="col-sm-6 col-sm-offset-2">
-                        <a href="">Forgot password ?</a>
-                    </div>
-                </div>
-
-            </form>
-
-        </div>
-        <div class="panel-footer">
-            <div class="col-sm-offset-2">
-                已有账号？ <a href="">立即登录</a>
-            </div>
-
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="panel-title">
+            Sign Up
         </div>
     </div>
-{% endblock content %}
-{% block script %}
-{#    <script>#}
-{#        $("#id_repassword").blur(function () {#}
-{#            var pwd = $("#id_password").val();#}
-{#            var repwd = $("#id_repassword").val();#}
-{#            if (pwd !== repwd) {#}
-{#                $("#id_repassword").attr({#}
-{#                    "data-container":"body" ,#}
-{#                    "data-toggle":"popover" ,#}
-{#                    "data-placement":"bottom" ,#}
-{#                    "data-content":"两次密码不一致"#}
-{#                });#}
-{#                $("#id_repassword").popover('show');#}
-{#            }#}
-{#        })#}
-{#    </script>#}
+    <div class="panel-body">
+        <form action="{% url 'user:register' %}" method="POST" role="form"
+              class="form-horizontal" id="register_form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="reg_username" class="col-sm-3 control-label ">Username</label>
+                <div class="col-sm-7">
+                        <input type="text" class="form-control"
+                               id="reg_username" name="username">
+                    <div id="reg_username_error"></div>
+                </div>
+            </div>
 
-{% endblock script %}
+            <div class="form-group">
+                <label for="reg_email" class="col-sm-3 control-label ">Email
+                    Address</label>
+                <div class="col-sm-7">
+                        <input type="text" class="form-control"
+                               id="reg_email" name="email"
+                               placeholder="Please input the email">
+                    <div id="reg_email_error"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg_password"
+                       class="col-sm-3 control-label ">Password</label>
+                <div class="col-sm-7">
+                        <input type="password" class="form-control"
+                               id="reg_password" name="password"
+                               placeholder="Please input the password">
+                        <div id="reg_password_error"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reg_repassword"
+                       class="col-sm-3 control-label ">Password
+                    again</label>
+                <div class="col-sm-7">
+                        <input type="password" class="form-control"
+                               id="reg_repassword" name="re_password"
+                               placeholder="Please repeat the password">
+                    <div id="reg_repassword_error"></div>
+                </div>
+            </div>
+
+{#            <div class="form-group">#}
+{#                <label for="id_auth_code" class="col-sm-3 control-label">#}
+{#                    Code</label>#}
+{#                <div class="col-sm-4">#}
+{#                    <div class="input-group">#}
+{#                        <input type="text"#}
+{#                               placeholder="Please input the verification code"#}
+{#                               class="form-control" name="auth_code"#}
+{#                               id="id_auth_code">#}
+{#                        <span class="input-group-addon">#}
+{#                                <i class="fas fa-barcode"></i>#}
+{#                            </span>#}
+{#                    </div>#}
+{#                    <span id="id_auth_code_error"></span>#}
+{#                </div>#}
+{#            </div>#}
+
+            <div class="form-group">
+                <div class="col-sm-6 col-sm-offset-3">
+                    <input type="checkbox" title="记住用户名" name="agreement">
+                    <span class="control-label">同意 <a href="">《协议》</a></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-6 col-sm-offset-3">
+                    <button type="submit"
+                            class="btn btn-default btn-lg btn-success">
+                        Create an account
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-sm-6 col-sm-offset-2">
+                    <a href="">Forgot password ?</a>
+                </div>
+            </div>
+        </form>
+
+    </div>
+    <div class="panel-footer">
+        <div class="col-sm-offset-2">
+            已有账号？ <a href="{% url 'user:login' %}">立即登录</a>
+        </div>
+
+    </div>
+</div>
+{% include 'static_tag.html' %}
+
+{#<script>#}
+{#    $("#id_repassword").blur(function () {#}
+{#        var pwd = $("#id_password").val();#}
+{#        var repwd = $("#id_repassword").val();#}
+{#        if (pwd !== repwd) {#}
+{#            $("#id_repassword").attr({#}
+{#                "data-container": "body",#}
+{#                "data-toggle": "popover",#}
+{#                "data-placement": "bottom",#}
+{#                "data-content": "两次密码不一致"#}
+{#            });#}
+{#            $("#id_repassword").popover('show');#}
+{#        }#}
+{#    })#}
+{#</script>#}
+</body>
+
+</html>
 

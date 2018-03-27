@@ -41,7 +41,7 @@
                             </div>
                             <div class="col-sm-1 text-center">
                                 {#                                <a href="{% url 'blog:edit_article' article.id %}">编辑</a>#}
-                                <a href="{% url 'blog:edit_article' %}?article_id={{ article.id }}&update=1">编辑</a>
+                                <a href="{% url 'blog:edit_article' article.id %}?article_id={{ article.id }}&update=1">编辑</a>
                             </div>
                             <div class="col-sm-1 text-center">
                                 <a id="del_article_{{ article.id }}"
@@ -80,7 +80,7 @@
                 <div class="modal-footer">
                     <form action="{% url 'blog:del_article' %}" method="POST">
                         {% csrf_token %}
-                        <input type="hidden" value="" id="del_id"
+                        <input type="hidden" id="del_id"
                                name="del_id">
                         <button type="button" class="btn btn-default"
                                 data-dismiss="modal">Close
@@ -93,6 +93,10 @@
         </div>
     </div>
 
-
-
 {% endblock content %}
+
+{% block script %}
+    <script>
+
+    </script>
+{% endblock %}

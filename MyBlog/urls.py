@@ -28,7 +28,7 @@ urlpatterns = [
     path('sitemsg/', include('sitemsg.urls', namespace='sitemsg')),
 
     path('cheditor', include('ckeditor_uploader.urls')),
-    url(r'tinymce/', include('tinymce.urls')),
+    # url(r'tinymce/', include('tinymce.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

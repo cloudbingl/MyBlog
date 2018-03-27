@@ -10,11 +10,12 @@ urlpatterns = [
     re_path(r'^article/(?P<pk>\d+)/$', views.article, name='article'),
 
     # 文章增删改 和 文章管理
-    path('edit_article/', views.edit_article, name='edit_article'),
+    path('add_article/', views.add_article, name='add_article'),
+    re_path('edit_article/(?P<pk>\d+)/$', views.edit_article, name='edit_article'),
     path('del_article/', views.del_article, name='del_article'),
     path('user_articles/', views.user_articles, name='user_articles'),
     # 后端验证文章表单
-    path('check_article/', views.check_article_handle),
+    # path('check_article/', views.check_article_handle),
 
     # 按分类查看文章
     re_path(r'^filter_category/(?P<pk>\d+)/$', views.filter_category,

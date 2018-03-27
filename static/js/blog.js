@@ -1,5 +1,5 @@
-// 每次刷新页面都去获取文章分类，然后js创建分类节点
-$.getJSON('/category_list_handle/?t=' + new Date(), function (ret) {
+// 获取文章分类，然后js创建分类节点
+$.getJSON('/category_list_handle/', function (ret) {
     $.each(ret, function (key, value) {
         var url = "/filter_category/" + key + "/";
         var cate = document.getElementById("cate-list");
@@ -18,7 +18,7 @@ $.getJSON('/category_list_handle/?t=' + new Date(), function (ret) {
 });
 
 // 获取最新文章
-$.getJSON('/new_article_json_handle/?t=' + new Date(), function (ret) {
+$.getJSON('/new_article_json_handle/', function (ret) {
     $.each(ret, function (key, value) {
         var url = "/article/" + key + "/";
         var html = '<a href="' + url + '" class="list-group-item">' + value + '</a>';
@@ -26,31 +26,40 @@ $.getJSON('/new_article_json_handle/?t=' + new Date(), function (ret) {
     })
 });
 
-
 // 获取热门文章
-$.getJSON('/hot_article_json_handle/?t=' + new Date(), function (ret) {
-    // 根据{"id":(title, num)}中的num排序
-    function sortRead(a, b) {
-        return !(a.id[1] - b.id[1]);
+$.getJSON('/hot_article_json_handle/', function (ret) {
+    // 定义排序规则 {id: 'id', data: ['title','num']}
+    function compare(a, b) {
+        if (a.data[1] < b.data[1])
+            return -1;
+        if (a.data[1] > b.data[1])
+            return 1;
+        return 0;
     }
-    [].slice.call(ret).sort(sortRead);
 
+    var countries = [];
+    //将返回的JSON 数据变为 {id: 'id', data: ['title','num']} 的形式，并放入数组中
     $.each(ret, function (key, value) {
-        var url = "/article/" + key + "/";
-        var bagde_html = "<span class='badge'>"+ value[1] +"</span>"
-        var html = '<a href="' + url + '" class="list-group-item">' + value[0] + bagde_html + '</a>';
-        // 排序后是正序，使用prepend()可以依次从后向前插入标签
-        // 从而显示为 阅读量从高到低排序
-        $("#hot-list").prepend(html)
-    })
+        countries.push({
+            id: key,
+            data: value
+        })
+    });
+    // 使用自定义规则排序
+    countries.sort(compare);
+
+    // 遍历数据，并创建 HTML 代码
+    for (var i = 0; i < countries.length; i++) {
+        var url = "/article/" + countries[i].id + "/";
+        var bagde = "<span class='badge'>" + countries[i].data[1] + "</span>";
+        var html = '<a href="' + url + '" class="list-group-item">' + countries[i].data[0] + bagde + '</a>';
+        $("#hot-list").prepend(html);
+    }
 });
 
-// 初始化富文本框
-// tinyMCE.init({
-//     'mode': 'textareas',
-//     'theme': 'advanced',
-//     'language': 'zh-CN'
-// });
+// Message显示3秒后消失
+$("#msg_alert").delay(3000).fadeOut();
+
 
 // 文章内容页面的评论
 // 添加引用
@@ -107,3 +116,125 @@ $(".del_article").click(function () {
 });
 
 
+// 个人信息修改页面
+// 显示隐藏修改密码
+$("#update_password").click(function () {
+    $("#update_password_form").toggle();
+});
+
+// 取消修改密码(隐藏修改密码)
+$("#cancel_update_password").click(function () {
+    $("#update_password_form").hide();
+});
+
+
+// 登录表单验证
+$("#login_form,#modal_login_form").validate({
+    // error表示错误信息，element表示触发元素
+    errorPlacement: function (error, element) {     // 错误信息显示位置
+        $("#" + element.attr("id") + "_error").append(error);
+    },
+    highlight: function (element, errorClass) {     // 高亮显示,设置为错误样式// element是 DOM对象
+        $(element).parent().removeClass("has-success").addClass("has-error");  // 第二个参数为样式,设置为错误样式
+        $(element).next().css("color", "red");
+    },
+    unhighlight: function (element, errorClass) {   // 取消高亮,设定为正确样式
+        var elem = $(element).parent();
+        if (elem.hasClass("has-error")) {
+            elem.removeClass("has-error");
+            elem.addClass("has-success");
+        } else {
+            elem.addClass("has-success");
+        }
+        $(element).next().css("color", "");
+    },
+    rules: {
+        "username": {
+            required: true,
+            rangelength: [3, 15]                // 长度范围
+        },
+        "password": {
+            required: true,
+            rangelength: [5, 32]
+        }
+    }
+});
+
+
+// 注册表单的验证
+$("#register_form,#modal_register_form").validate({
+    // debug: true,                                    // 调试模式
+    submitHandler: function (form) {
+        form.submit();                              // 手动提交
+    },
+    // error表示错误信息，element表示触发元素
+    errorPlacement: function (error, element) {     // 错误信息显示位置
+        $("#" + element.attr("id") + "_error").append(error);
+    },
+    highlight: function (element, errorClass) {     // 高亮显示,设置为错误样式
+        // element是 DOM对象
+        $(element).parent().removeClass("has-success").addClass("has-error");  // 第二个参数为样式,设置为错误样式
+        $(element).next().css("color", "red");
+    },
+    unhighlight: function (element, errorClass) {   // 取消高亮,设定为正确样式
+        var elem = $(element).parent();
+        if (elem.hasClass("has-error")) {
+            elem.removeClass("has-error");
+            elem.addClass("has-success");
+        } else {
+            elem.addClass("has-success");
+        }
+        $(element).next().css("color", "");
+    },
+
+    // 使用下面的错误样式会导致 高亮显示位置错误 所以直接在高亮中设置样式
+    // errorClass: "",                              // 定义的错误样式
+    // validClass : "",                             // 定义的正确样式
+    rules: {
+        username: {
+            required: true,
+            rangelength: [3, 15],
+            remote: {
+                url: "/user/check_username/",
+                type: "POST",
+                data: {  // 发送数据
+                    "username": function () {
+                        return $("#reg_username").val();
+                    }
+                },
+                dataFilter: function (data, type) {  // 处理完成执行
+                    return data.trim() === "true";
+                }
+            }
+        },
+        email: {
+            required: true,
+            email: true
+        },
+        password: {
+            required: true,
+            rangelength: [5, 32]
+        },
+        re_password: {
+            required: true,
+            rangelength: [5, 32],
+            equalTo: "#reg_password"
+        }
+
+    },
+    messages: {
+        "username": {
+            required: "用户名不能为空",
+            remote: "用户名已存在"
+        }
+    }
+});
+
+
+// 登录和注册模态框切换
+$(".my_modal_login").click(function () {
+    $("#registerModal").modal("hide");
+});
+$(".my_modal_register").click(function () {
+    $("#loginModal").modal("hide");
+});

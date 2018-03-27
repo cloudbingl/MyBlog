@@ -21,7 +21,6 @@
                 </div>
             </div>
 
-
             <p class="pull-right">
                 <i class="far fa-bookmark"></i>
                 <span class="label label-default">
@@ -31,7 +30,7 @@
             <ul class="list-inline">
                 <li>
                     <i class="far fa-user"></i>
-                    <a href="">{{ article.author }}</a>
+                    <a href="{% url 'user:user_index' %}">{{ article.author }}</a>
                 </li>
                 <li>
                     <span class="glyphicon glyphicon-time"></span>
@@ -55,7 +54,6 @@
     <!-- 分页 -->
     {% include 'blog/tags/pagination.html' %}
     <!-- 分页结束 -->
-
 
 {% endblock content %}
 

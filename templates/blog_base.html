@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -55,7 +55,7 @@
 
         <div class="col-sm-3">
             {% block right_menu %}
-            
+
             {% endblock %}
             {% include 'blog/tags/cate_menu.html' %}
         </div>
@@ -66,16 +66,21 @@
 
 <button id="top" style="position:fixed;right:20px;bottom:20px">回到顶部</button>
 
-<script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
-<script src="{% static 'js/bootstrap.min.js' %}"></script>
-<script src="{% static 'js/blog.js' %}"></script>
-<script src="{% static 'js/general.js' %}" type="text/javascript"></script>
-
+{% include 'static_tag.html' %}
 <script>
-    {#top.onclick = function () {#}
-    {#    scrollTo(0, 0);#}
-    {# }#}
+    $(window).on('scroll', function () {
+        // 判断显示还是隐藏按钮
+        if ($(this).scrollTop() >= $(this).height()) {
+            $('#top').fadeIn('slow');
+        } else {
+            $('#top').fadeOut('slow');
+        }
+    });
+    $("#top").click(function () {
+        $("html,body").animate({scrollTop: 0}, 500);
+    });
 </script>
+
 {% block script %}
 {% endblock script %}
 </body>
