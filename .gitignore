@@ -44,7 +44,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# my
 *.sqlite3
 Blog设计.md
 .idea/

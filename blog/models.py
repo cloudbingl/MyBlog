@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from ckeditor_uploader.fields import RichTextUploadingField
 
-from site_statistics.models import ReadNumExtendMethod,ReadDetail
+from read_statistics.models import ReadNumExtendMethod,ReadDetail,ReadNum
 
 
 class Category(models.Model):
@@ -33,7 +33,7 @@ class Article(models.Model, ReadNumExtendMethod):
     category = models.ForeignKey(Category, on_delete=models.CASCADE,
                                  verbose_name="文章分类")
     is_delete = models.BooleanField(default=False, verbose_name="是否删除")
-    read_detail = GenericRelation(ReadDetail)
+    read_detail = GenericRelation(ReadDetail, related_query_name='articles')
 
     def __str__(self):
         return self.title

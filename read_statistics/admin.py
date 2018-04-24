@@ -1,6 +1,6 @@
 from django.contrib import admin
 from sitemsg.models import Sitemsg, Notice
-from site_statistics.models import ReadNum, ReadDetail
+from read_statistics.models import ReadNum, ReadDetail
 
 @admin.register(ReadNum)
 class ReadNumAdmin(admin.ModelAdmin):

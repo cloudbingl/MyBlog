@@ -13,12 +13,12 @@ from django.db import transaction
 
 from blog import models
 from blog.forms import ArticleForm
-from site_statistics.utils import set_read_key
-from site_statistics.utils import get_seven_days_read_data
-from site_statistics.utils import get_today_hot_data
-from site_statistics.utils import get_yesterday_hot_data
-from site_statistics.utils import get_seven_days_hot_data
-from sitemsg.views import at_user_msg_handle
+from blog.utils import get_num_parginator
+from read_statistics.utils import set_read_key
+from read_statistics.utils import get_seven_days_read_data
+from read_statistics.utils import get_today_hot_data
+from read_statistics.utils import get_yesterday_hot_data
+from read_statistics.utils import get_seven_days_hot_data
 
 
 def page_not_found(request):
@@ -41,7 +41,8 @@ def index(request):
     context['dates'] = dates
     context['read_nums'] = read_nums
     context['today_hot_data'] = get_today_hot_data(article_content_type)
-    context['yesterday_hot_data'] = get_yesterday_hot_data(article_content_type)
+    context['yesterday_hot_data'] = get_yesterday_hot_data(
+        article_content_type)
     context['seven_days_hot_data'] = get_seven_days_hot_data()
     return render(request, 'blog/index.html', context)
 
@@ -54,10 +55,17 @@ def filter_category(request, pk):
     except models.Category.DoesNotExist:
         return HttpResponseRedirect(reverse('blog:index'))
     articles = models.Article.objects.filter(category=cate.id, pub_status=True)
+
     page = request.GET.get('page')
     data_paginator = Paginator(articles, 10)
     data = data_paginator.get_page(page)
     context['articles'] = data
+
+    # 自定义分页范围
+    current_page = data.number
+    total_page = data_paginator.num_pages
+    my_page_range = get_num_parginator(5, total_page, current_page)
+    context['my_page_range'] = my_page_range
     return render(request, 'blog/articles_filter.html', context)
 
 
@@ -71,27 +79,15 @@ def articles(request):
     data_paginator = Paginator(articles, 10)
     page = request.GET.get('page')
     data = data_paginator.get_page(page)
+    context['articles'] = data
+
+    # 自定义分页范围
     current_page = data.number
     total_page = data_paginator.num_pages
-
-    # 自定义分页，只显示5个页码
-    if total_page < 5:
-        start_index = 1
-        end_index = total_page + 1
-    else:
-        if current_page <= 3:
-            start_index = 1
-            end_index = 5 + 1
-        else:
-            start_index = current_page - 2
-            end_index = current_page + 2 + 1
-            if (current_page + 2) > total_page:
-                end_index = total_page + 1
-                start_index = total_page - 4
-    my_page_range = list(range(start_index, end_index))
-    context['articles'] = data
+    my_page_range = get_num_parginator(5, total_page, current_page)
     context['my_page_range'] = my_page_range
     return render(request, 'blog/articles.html', context)
+
 
 
 def article(request, pk=None):
@@ -116,9 +112,8 @@ def article(request, pk=None):
             return render(request, 'blog/articles.html')
 
 
-
-
-def edit_article(request,pk):
+@login_required
+def edit_article(request, pk):
     """修改文章"""
     context = {}
     if request.user.is_authenticated:
@@ -127,15 +122,20 @@ def edit_article(request,pk):
         if request.method == "GET":
             article = models.Article.objects.get(author=user, pk=pk)
             context['form'] = ArticleForm(instance=article)
+            context['article'] = article
             return render(request, 'blog/article_edit.html', context)
 
         if request.method == "POST":
             form = ArticleForm(request.POST)
             if form.is_valid():
-                models.Article.objects.filter(pk=pk).update(**form.cleaned_data)
+                print(form)
+                models.Article.objects.filter(pk=pk).update(
+                    **form.cleaned_data)
                 messages.success(request, "文章修改成功")
-                return HttpResponseRedirect(reverse('blog:article', args=[pk]))
+                return HttpResponseRedirect(reverse('blog:user_articles'))
 
+
+@login_required
 def add_article(request):
     """添加新文章"""
     context = {}
@@ -155,155 +155,6 @@ def add_article(request):
                 messages.success(request, '文章添加成功')
                 return HttpResponseRedirect(reverse('blog:articles'))
 
-
-
-
-
-# '''
-# @login_required
-# def edit_article(request):
-#     """增加、修改文章"""
-#     if request.user.is_authenticated:
-#         user = request.user
-#
-#         if request.method == 'GET':
-#             opt = request.GET.get('opt', '0')
-#             update = request.GET.get('update', '0')
-#             article_id = request.GET.get('article_id', '0')
-#             if opt == '1' and update == '0' and article_id == '0':
-#                 # 添加新文章
-#                 category = models.Category.objects.all()
-#                 context['category'] = category
-#                 from blog.forms import ArticleForm
-#                 context['form'] = ArticleForm()
-#                 return render(request, 'blog/article_edit.html', context)
-#             elif opt == '0' and update == '1' and article_id != '0':
-#                 # 编辑文章
-#                 edit_context = edit_article_handle(request, user, article_id)
-#                 return render(request, 'blog/article_edit.html', edit_context)
-#             else:
-#                 messages.warning(request, '访问的页面不存在')
-#                 return render(request,
-#                               'users/user_articles.html')
-#
-#         elif request.method == 'POST':
-#             status = request.POST.get('status_value', True)
-#             title = request.POST.get('title')
-#             detail = request.POST.get('detail')
-#             category = request.POST.get('category')
-#
-#             # 解析出POST方法提交的完整地址
-#             from urllib.parse import urlparse, parse_qsl
-#             url = request.get_full_path()
-#             q = dict(parse_qsl(urlparse(url).query))
-#
-#             category_obj = models.Category.objects.get(id=category)
-#
-#             # 捕获添加和更新时的异常，并尝试保存草稿
-#             try:
-#                 if 'opt' in q and int(q['opt']) == 1:
-#                     if int(status) == 0:
-#                         status = False
-#                     edit_article_add_handle(request, user, title, detail,
-#                                             category_obj, status)
-#                 if 'update' in q and 'article_id' in q:
-#                     pk = int(q.get('article_id'))
-#                     if int(status) == 0:
-#                         status = False
-#                     update_article_handle(request, user, pk, title, detail,
-#                                           category_obj, status)
-#             except Exception as e:
-#                 messages.warning(request, '文章提交时发生错误,已经尝试安全保存')
-#                 title = '[发生错误,安全保存]' + title
-#                 try:
-#                     edit_article_add_handle(request, user, title, detail,
-#                                             category, False)
-#                 except Exception as e:
-#                     messages.warning(request, '表单填写不完整，未安全保存')
-#             return HttpResponseRedirect(reverse('blog:user_articles'))
-#
-#
-# @csrf_exempt
-# def check_article_handle(request):
-#     """ajax验证文章的合法性"""
-#     status = request.POST.get('status_value')
-#     category = request.POST.get('category', '')
-#     title = request.POST.get('title', '')
-#     detail = request.POST.get('ck_detail', '')
-#     context = 'Error:'
-#     if not title:
-#         context += '标题不能为空!'
-#         return HttpResponse(context)
-#     if not detail:
-#         context += '内容不能为空!'
-#         return HttpResponse(context)
-#     if not category:
-#         context += '分类不能为空!'
-#         return HttpResponse(context)
-#     if not category.isdecimal():
-#         context += '分类错误!'
-#         return HttpResponse(context)
-#     if status != '0' and status != '1':
-#         context += '只能进行发布或保存!'
-#         return HttpResponse(context)
-#     return HttpResponse('验证通过')
-#
-#
-# def edit_article_handle(request, user, article_id):
-#     """返回需要编辑文章数据"""
-#     context = {}
-#     try:
-#         article = models.Article.objects.get(id=article_id, author=user)
-#         context['article'] = article
-#         category = models.Category.objects.all()
-#         context['category'] = category
-#     except models.Article.DoesNotExist:
-#         messages.warning(request, '文章不存在')
-#     return context
-#
-#
-# def edit_article_add_handle(request, user, title, detail, category_obj,
-#                             pub_status):
-#     """添加新文章操作"""
-#     try:
-#         article_obj = models.Article()
-#         article_obj.author = user
-#         article_obj.title = title
-#         article_obj.detail = detail
-#         article_obj.category = category_obj
-#         article_obj.pub_status = pub_status
-#         article_obj.save()
-#         if pub_status:
-#             category_obj.num += 1
-#             category_obj.save()
-#         messages.success(request, '文章添加成功')
-#     except Exception as e:
-#         messages.warning(request, '文章添加失败')
-#         raise
-#
-#
-# def update_article_handle(request, user, pk, title, detail, category_obj,
-#                           pub_status):
-#     """更新文章操作"""
-#     try:
-#         article_obj = models.Article.objects.get(id=pk, author=user)
-#         old_pub_status = article_obj.pub_status
-#         old_category = article_obj.category
-#
-#         article_obj.title = title
-#         article_obj.detail = detail
-#         article_obj.category = category_obj
-#
-#         article_obj.pub_status = pub_status
-#         article_obj.save()
-#
-#         category_obj.save()
-#         messages.success(request, '文章更新成功')
-#     except models.Article.DoesNotExist:
-#         messages.warning(request, '修改的文章不存在')
-#         raise
-# '''
-
 @login_required
 def del_article(request):
     """删除文章"""
@@ -312,17 +163,14 @@ def del_article(request):
         if request.method == 'POST':
             del_id = request.POST.get('del_id', '')
             try:
-                article = models.Article.objects.get(id=del_id, author=user)
-                article.delete()
-                cate = models.Category.objects.get(id=article.category_id)
-                cate.num -= 1
-                cate.save()
+                models.Article.objects.get(id=del_id, author=user).delete()
             except models.Article.DoesNotExist:
                 messages.warning(request, '文章不存在')
             return HttpResponseRedirect(reverse('blog:user_articles'))
 
 
 def user_index(request, pk):
+    """用户首页"""
     context = {}
     try:
         user = User.objects.get(id=pk)
@@ -331,7 +179,7 @@ def user_index(request, pk):
         messages.warning(request, '用户不存在')
         return render(request, 'blog/index.html')
     articles = models.Article.objects.filter(author=user, pub_status=True) \
-        .order_by('-pub_date')
+                                     .order_by('-pub_date')
     context['articles'] = articles
     return render(request, 'users/user_index.html', context)
 
@@ -339,16 +187,22 @@ def user_index(request, pk):
 @login_required
 def user_articles(request):
     """用户文章列表"""
+    context = {}
     if request.user.is_authenticated:
         user = request.user
         if request.method == 'GET':
-            context = {}
             articles = models.Article.objects.filter(author=user) \
-                .order_by('-pub_date')
+                                             .order_by('-pub_date')
             page = request.GET.get('page')
             data_paginator = Paginator(articles, 5)
             data = data_paginator.get_page(page)
             context['articles'] = data
+
+            # 自定义分页范围
+            current_page = data.number
+            total_page = data_paginator.num_pages
+            my_page_range = get_num_parginator(5, total_page, current_page)
+            context['my_page_range'] = my_page_range
             return render(request, 'users/user_articles.html', context)
 
 
@@ -367,67 +221,74 @@ def user_comment(request):
         return render(request, 'users/user_comments.html', context)
 
 
-@login_required
-@transaction.atomic()
 def add_comment(request):
-    """添加评论"""
     if request.user.is_authenticated:
         user = request.user
 
-        if request.method == 'POST':
-            article_id = request.POST.get('article_id')
-            try:
-                # 查询该文章是否被删除
-                article_obj = models.Article.objects.get(id=article_id)
-            except models.Article.DoesNotExist:
-                messages.warning(request, '文章已删除，无法评论')
-                return HttpResponseRedirect(reverse('blog:articles'))
+        if request.method == "POST":
+            pass
 
-            # 创建事务节点
-            transaction_comment = transaction.savepoint()
-            comment = request.POST.get('comment')
-
-            import re
-            # 匹配回复的用户
-            re_user = re.compile(r'@(.*)\r')
-            reply_user = re_user.findall(comment)
-
-            # 匹配引用的内容
-            re_quote = re.compile(r'\[quote\]\r\n(.*?)\r\n\[\/quote\]', re.M)
-            reply_quote = re_quote.search(comment)
-
-            # 创建评论对象
-            comment_obj = models.Comment()
-            comment = comment.split('[/quote]')[-1]
-
-            # 判断是否回复用户(回复和引用都将出现：@用户名)
-            if not reply_user:
-                comment_obj.reply_info = ''
-                comment_obj.quote_info = ''
-            else:
-                # 将匹配到的用户名存入，准备后续的通知
-                reply_user_list = ','.join(set(reply_user))
-                comment_obj.reply_info = reply_user_list
-
-                at_user_msg_handle(article_obj, comment, reply_user_list)
-
-                # 如果有引用内容，保存引用的内容
-                if reply_quote:
-                    reply_quote = reply_quote.group(1)
-                    comment_obj.quote_info = reply_quote
-
-            # 被评论的文章
-            comment_obj.article = article_obj
-            # 评论的用户
-            comment_obj.user = user
-            # 除去引用之后的评论文字
-            comment_obj.comment = comment
-            comment_obj.save()
-
-            # 没有出现错误将提交事务
-            transaction.savepoint_commit(transaction_comment)
-            return HttpResponseRedirect(
-                reverse('blog:article', args=[article_id]))
+# @login_required
+# @transaction.atomic()
+# def add_comment(request):
+#     """添加评论"""
+#     if request.user.is_authenticated:
+#         user = request.user
+#
+#         if request.method == 'POST':
+#             article_id = request.POST.get('article_id')
+#             try:
+#                 # 查询该文章是否被删除
+#                 article_obj = models.Article.objects.get(id=article_id)
+#             except models.Article.DoesNotExist:
+#                 messages.warning(request, '文章已删除，无法评论')
+#                 return HttpResponseRedirect(reverse('blog:articles'))
+#
+#             # 创建事务节点
+#             transaction_comment = transaction.savepoint()
+#             comment = request.POST.get('comment')
+#
+#             import re
+#             # 匹配回复的用户
+#             re_user = re.compile(r'@(.*)\r')
+#             reply_user = re_user.findall(comment)
+#
+#             # 匹配引用的内容
+#             re_quote = re.compile(r'\[quote\]\r\n(.*?)\r\n\[\/quote\]', re.M)
+#             reply_quote = re_quote.search(comment)
+#
+#             # 创建评论对象
+#             comment_obj = models.Comment()
+#             comment = comment.split('[/quote]')[-1]
+#
+#             # 判断是否回复用户(回复和引用都将出现：@用户名)
+#             if not reply_user:
+#                 comment_obj.reply_info = ''
+#                 comment_obj.quote_info = ''
+#             else:
+#                 # 将匹配到的用户名存入，准备后续的通知
+#                 reply_user_list = ','.join(set(reply_user))
+#                 comment_obj.reply_info = reply_user_list
+#
+#                 at_user_msg_handle(article_obj, comment, reply_user_list)
+#
+#                 # 如果有引用内容，保存引用的内容
+#                 if reply_quote:
+#                     reply_quote = reply_quote.group(1)
+#                     comment_obj.quote_info = reply_quote
+#
+#             # 被评论的文章
+#             comment_obj.article = article_obj
+#             # 评论的用户
+#             comment_obj.user = user
+#             # 除去引用之后的评论文字
+#             comment_obj.comment = comment
+#             comment_obj.save()
+#
+#             # 没有出现错误将提交事务
+#             transaction.savepoint_commit(transaction_comment)
+#             return HttpResponseRedirect(
+#                 reverse('blog:article', args=[article_id]))
 
 
 @login_required

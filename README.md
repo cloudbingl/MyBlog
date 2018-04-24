@@ -1,9 +1,9 @@
+博客多人版
 #### 开发环境
 * Python 3.54
 * Django 2.0
 ```
 pip install django
-pip install django-tinymce
 pip install django-markdownx
 pip install django-ckeditor
 ```

@@ -42,8 +42,3 @@ class ReadDetail(models.Model):
     class Meta:
         verbose_name= "每日阅读详情"
         verbose_name_plural = verbose_name
-
-
-class CommentNum(models.Model):
-    """评论量计数"""
-    pass

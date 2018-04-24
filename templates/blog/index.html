@@ -42,46 +42,43 @@
 <div class="container">
     <div id="container" style="width: 600px;height:400px;margin: 0 auto"></div>
 </div>
-
-<h3>今日热门文章</h3>
-<ul>
-    {% for data in today_hot_data %}
-        <li><a href="{% url 'blog:article' data.object_id %}" target="_blank">
-            {{ data.content_object.title }} ({{ data.read_num }})</a>
-        </li>
-    {% empty %}
-        <li>今日没有热门文章</li>
-    {% endfor %}
-</ul>
-
+{##}
+{#<h3>今日热门文章</h3>#}
+{#<ul>#}
+{#    {% for data in today_hot_data %}#}
+{#        <li><a href="{% url 'blog:article' data.object_id %}" target="_blank">#}
+{#            {{ data.content_object.title }} ({{ data.read_num }})</a>#}
+{#        </li>#}
+{#    {% empty %}#}
+{#        <li>今日没有热门文章</li>#}
+{#    {% endfor %}#}
+{#</ul>#}
 
 <!-- 昨日热门文章 -->
-<h3>昨日热门文章</h3>
-<ul>
-    {% for data in yesterday_hot_data %}
-        <li>
-            <a href="{% url 'blog:article' data.object_id %}" target="_blank">
-            {{ data.content_object.title }} ({{ data.read_num }})</a>
-        </li>
-        {% empty %}
-        <li>昨日没有热门文章</li>
-    {% endfor %}
-</ul>
+{#<h3>昨日热门文章</h3>#}
+{#<ul>#}
+{#    {% for data in yesterday_hot_data %}#}
+{#        <li>#}
+{#            <a href="{% url 'blog:article' data.object_id %}" target="_blank">#}
+{#            {{ data.content_object.title }} ({{ data.read_num }})</a>#}
+{#        </li>#}
+{#        {% empty %}#}
+{#        <li>昨日没有热门文章</li>#}
+{#    {% endfor %}#}
+{#</ul>#}
 
 
-<h3>七天热门文章</h3>
-<ul>
-    {% for data in seven_days_hot_data %}
-        <li>
-            <a href="{% url 'blog:article' data.id %}" target="_blank">
-            {{ data.title}} ({{ data.read_num_sum }})</a>
-        </li>
-    {% empty %}
-        <li></li>
-    {% endfor %}
-
-
-</ul>
+{#<h3>七天热门文章</h3>#}
+{#<ul>#}
+{#    {% for data in seven_days_hot_data %}#}
+{#        <li>#}
+{#            <a href="{% url 'blog:article' data.id %}" target="_blank">#}
+{#            {{ data.title}} ({{ data.read_num_sum }})</a>#}
+{#        </li>#}
+{#    {% empty %}#}
+{#        <li></li>#}
+{#    {% endfor %}#}
+{#</ul>#}
 </body>
 
 

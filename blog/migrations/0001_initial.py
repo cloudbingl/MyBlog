@@ -4,7 +4,7 @@ import ckeditor_uploader.fields
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import site_statistics.models
+import read_statistics.models
 
 
 class Migration(migrations.Migration):
@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                 'verbose_name': '文章',
                 'ordering': ('-pub_date',),
             },
-            bases=(models.Model, site_statistics.models.ReadNumExtendMethod),
+            bases=(models.Model, read_statistics.models.ReadNumExtendMethod),
         ),
         migrations.CreateModel(
             name='Category',

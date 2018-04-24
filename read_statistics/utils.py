@@ -59,7 +59,7 @@ def get_yesterday_hot_data(content_type):
 
 # def get_seven_days_hot_data(content_type):
 #     today = timezone.now().date()
-#     seven_days = today - datetime.timedelta(days=7)
+#     seven_days = today - datetime.timedelta(days=7)在·
 #     read_details = ReadDetail.objects\
 #                              .filter(content_type=content_type,
 #                                      date__lt=today,

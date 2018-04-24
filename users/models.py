@@ -4,7 +4,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-
 class UserInfo(models.Model):
     """用户扩展信息"""
     user = models.OneToOneField(User, on_delete=models.CASCADE,
@@ -25,4 +24,3 @@ class UserInfo(models.Model):
     class Meta:
         verbose_name = "用户信息扩展"
         verbose_name_plural = verbose_name
-

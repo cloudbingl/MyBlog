@@ -11,7 +11,7 @@ urlpatterns = [
 
     # 文章增删改 和 文章管理
     path('add_article/', views.add_article, name='add_article'),
-    re_path('edit_article/(?P<pk>\d+)/$', views.edit_article, name='edit_article'),
+    re_path(r'^edit_article/(?P<pk>\d+)/$', views.edit_article, name='edit_article'),
     path('del_article/', views.del_article, name='del_article'),
     path('user_articles/', views.user_articles, name='user_articles'),
     # 后端验证文章表单

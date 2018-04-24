@@ -40,8 +40,8 @@
                                 {{ article.read }}
                             </div>
                             <div class="col-sm-1 text-center">
-                                {#                                <a href="{% url 'blog:edit_article' article.id %}">编辑</a>#}
-                                <a href="{% url 'blog:edit_article' article.id %}?article_id={{ article.id }}&update=1">编辑</a>
+                                <a href="{% url 'blog:edit_article' article.id %}">编辑</a>
+                                {# <a href="{% url 'blog:edit_article' article.id %}?article_id={{ article.id }}&update=1">编辑</a>#}
                             </div>
                             <div class="col-sm-1 text-center">
                                 <a id="del_article_{{ article.id }}"

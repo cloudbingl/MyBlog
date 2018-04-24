@@ -99,7 +99,7 @@
             </div>
         {% endif %}
 
-    {% if request.session.username%}
+    {% if request.user.is_authenticated %}
         <div id="comment-form">
             <form action="{% url 'blog:add_comment' %}" method="POST"
                   role="form" class="form-horizontal">
@@ -108,11 +108,8 @@
                     <label for="nicheng" class="col-sm-1">昵称:</label>
                     <div class="col-sm-4">
                         <div class="input-group">
-                            <span class="input-group-addon">
-                                <span class="glyphicon glyphicon-user"></span>
-                            </span>
                             <input readonly class="form-control" id="nicheng"
-                                   placeholder=" {{ request.session.username }}">
+                                   placeholder=" {{ request.user }}">
                         </div>
                     </div>
                 </div>

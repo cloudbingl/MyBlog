@@ -53,21 +53,16 @@
         </div>
 
         <!-- 确定 发布 或 保存 -->
-        <input type="hidden" id="status" name="status_value" value="1">
+        {{ form.pub_status }}
 
         <div class="form-group">
             <div class="col-sm-6 col-sm-offset-2">
-{#                <a role="button" class="btn btn-primary btn-lg"#}
-{#                   id="submit">#}
-{#                    发#}
-{#                </a>#}
-                <button type="submit" class="btn btn-primary btn-lg">
-                        form发布
-                    </button>
-                <a role="button" class="btn btn-default btn-lg"
+                <button type="button" class="btn btn-primary btn-lg"
+                id="article_submit">发布</button>
+                <button type="button" class="btn btn-default btn-lg"
                    id="save_article">
                     保存草稿
-                </a>
+                </button>
                 <b style="color: red;" id="tip_notice"></b>
             </div>
         </div>
@@ -80,52 +75,22 @@
 {% block script %}
 
     <script>
-        $("textarea").addClass("form-control");
+       $("textarea").addClass("form-control");
 
         // 文章保存按钮(点击后文章转态字段设置为0即"未发布")
         $("#save_article").click(function () {
-            $("#status").val("0");
-            check_article("确认保存文章?");
+            var form = $("#article_form");
+            form.find("#id_pub_status").val("False");
+            window.onbeforeunload = null;
+            form.submit();
         });
 
         // 文章发布按钮
         $("#article_submit").click(function () {
-            check_article("确认发布文章?");
+            // 解绑离开页面的弹窗确认
+            window.onbeforeunload = null;
+            $("#article_form").submit();
         });
-
-        // ajax检查文章方法
-        function check_article(status_text) {
-            $("#tip_notice").text("");
-            {#var d = tinyMCE.activeEditor.getContent();#}
-            var ck = CKEDITOR.instances.id_detail.getData();
-            $("#hidden_detail").val(ck);
-            var article_ajax;
-            $.ajax({
-                url: "/check_article/",
-                data: $("#article_form").serialize(),
-                type: 'POST',
-                dataType: 'text',
-                cache: false,
-                success: function (data) {
-                    if (data === "验证通过") {
-                        console.log(data);
-                        if (confirm(status_text)) {
-                            // 解绑离开页面的弹窗确认
-                            window.onbeforeunload = null;
-                            $("#article_form").submit();
-                        }
-                    } else {
-                        console.log(data);
-                        $("#tip_notice").text(data);
-                    }
-                },
-                error: function (xhr) {
-                    $("#tip_notice").html(xhr.responseText);
-                    article_ajax = false;
-                    return article_ajax
-                }
-            });
-        }
 
         window.onbeforeunload = function () {
             return confirm("确定离开此页面吗？未保存的数据将会丢失！");

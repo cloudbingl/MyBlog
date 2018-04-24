@@ -5,7 +5,10 @@ from .models import Article
 class ArticleForm(forms.ModelForm):
     class Meta:
         model = Article
-        fields = ('title', 'detail', 'category')
+        fields = ('id','title', 'detail','pub_status', 'category')
         widgets = {
-            'detail': CKEditorUploadingWidget,
+            'title': forms.TextInput(attrs={'class':'form-control'}),
+            'detail': CKEditorUploadingWidget(attrs={'class':'form-control'}),
+            'category': forms.Select(attrs={'class':'form-control'}),
+            'pub_status': forms.HiddenInput,
         }

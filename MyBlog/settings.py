@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     'blog.apps.BlogConfig',  # 博客系统
     'users.apps.UsersConfig',  # 用户系统
     'sitemsg.apps.SitemsgConfig',  # 站内信系统
-    'site_statistics.apps.SiteStatisticsConfig',
+    'read_statistics.apps.ReadStatisticsConfig',
     'comments.apps.CommentsConfig'  # 评论系统
 ]
 
@@ -164,14 +164,6 @@ LOGIN_URL = '/user/login/'
 # }
 
 
-
-# django-tinymce
-# TINYMCE_DEFAULT_CONFIG = {
-#     'theme': 'advanced',
-#     'width': 900,
-#     'height': 800,
-# }
-
 # 配置 ckeditor
 CKEDITOR_UPLOAD_PATH = 'upload'
 CKEDITOR_ALLOW_NONIMAGE_FILES = False
@@ -183,9 +175,9 @@ CKEDITOR_CONFIGS = {
             ['Source', '-', 'Bold', 'Italic']
         ],
         'toolbar_YourCustomToolbarConfig': [
-            {'name': 'document', 'items': ['Source', '-', 'Preview', 'Print', '-', 'Templates']},
-            {'name': 'clipboard', 'items': ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
-            {'name': 'editing', 'items': ['Find', 'Replace', '-', 'SelectAll']},
+
+            {'name': 'clipboard', 'items': ['PasteText', 'PasteFromWord', '-', 'Undo', 'Redo']},
+            {'name': 'editing', 'items': ['Find', 'Replace']},
             {'name': 'forms',
              'items': ['Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton',
                        'HiddenField']},
@@ -194,21 +186,23 @@ CKEDITOR_CONFIGS = {
              'items': ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat']},
             {'name': 'paragraph',
              'items': ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-',
-                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-', 'BidiLtr', 'BidiRtl']},
+                       'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock', '-']},
             {'name': 'links', 'items': ['Link', 'Unlink', 'Anchor']},
             {'name': 'insert',
-             'items': ['Image','Table', 'HorizontalRule', 'Smiley', 'SpecialChar', 'PageBreak']},
+             'items': ['Image','Table', 'HorizontalRule', 'Smiley', 'SpecialChar']},
+            {'name': 'document', 'items': ['Source', '-', 'Preview', '-', 'Templates']},
+            {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
+            {'name': 'about', 'items': ['About']},
             '/',
             {'name': 'styles', 'items': ['Styles', 'Format', 'Font', 'FontSize']},
             {'name': 'colors', 'items': ['TextColor', 'BGColor']},
-            {'name': 'tools', 'items': ['Maximize', 'ShowBlocks']},
-            {'name': 'about', 'items': ['About']},
+
             '/',  # put this to force next toolbar on new line
-            {'name': 'yourcustomtools', 'items': [
-                # put the name of your editor.ui.addButton here
-                'Preview',
-                'Maximize',
-            ]},
+            #{'name': 'yourcustomtools', 'items': [
+            #   # put the name of your editor.ui.addButton here
+            #   'Preview',
+            #   'Maximize',
+            #]},
         ],
         'toolbar': 'YourCustomToolbarConfig',  # put selected toolbar config here
         # 'toolbarGroups': [{ 'name': 'document', 'groups': [ 'mode', 'document', 'doctools' ] }],
